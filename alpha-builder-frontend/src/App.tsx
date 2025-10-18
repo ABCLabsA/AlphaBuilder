@@ -36,8 +36,21 @@ function App() {
                 </thead>
                 <tbody>
                   {data.items.map((item: any, index: number) => {
-                    const isStable = item.st.includes('green');
                     const rowBg = index % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                    let statusText = '';
+                    let statusColor = '';
+
+                    if (item.st.includes('green')) {
+                      statusText = '稳定';
+                      statusColor = 'text-green-600';
+                    } else if (item.st.includes('yellow')) {
+                      statusText = '一般';
+                      statusColor = 'text-yellow-500';
+                    } else {
+                      statusText = '不稳定';
+                      statusColor = 'text-red-600';
+                    }
+
                     return (
                       <tr
                         key={item.n}
@@ -47,12 +60,8 @@ function App() {
                         <td className="p-3 text-right">{item.p.toFixed(6)}</td>
                         <td className="p-3 text-right">{item.spr}</td>
                         <td className="p-3 text-right">{item.md * 4}</td>
-                        <td
-                          className={`p-3 text-center font-semibold ${
-                            isStable ? 'text-green-600' : 'text-red-600'
-                          }`}
-                        >
-                          {isStable ? '稳定' : '不稳定'}
+                        <td className={`p-3 text-center font-semibold ${statusColor}`}>
+                          {statusText}
                         </td>
                       </tr>
                     );
