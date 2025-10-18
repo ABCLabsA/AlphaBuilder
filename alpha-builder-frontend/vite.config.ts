@@ -9,4 +9,13 @@ export default defineConfig({
     react(), 
     tailwindcss()
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://alpha123.uk',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 })
