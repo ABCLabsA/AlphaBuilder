@@ -4,22 +4,39 @@ function App() {
   const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    fetch('/api/stability/stability_feed_v2.json')
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then((json) => setData(json))
-      .catch((err) => console.error('Fetch error:', err));
+    let isMounted = true;
+
+    const fetchData = () => {
+      fetch('/api/stability/stability_feed_v2.json')
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then((json) => {
+          if (isMounted) {
+            setData(json);
+          }
+        })
+        .catch((err) => console.error('Fetch error:', err));
+    };
+
+    fetchData(); // initial load
+
+    const interval = setInterval(fetchData, 7000); // refresh every 7 seconds
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   return (
     <>
       <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gradient-to-br from-gray-50 to-gray-100">
         {data ? (
-          <div className="w-full max-w-5xl bg-white shadow-lg rounded-xl p-6 border border-gray-200">
+          <div className="w-full max-w-5xl bg-white shadow-lg rounded-xl p-6 border border-gray-200 transition-opacity duration-500 ease-in-out opacity-100">
             <h2 className="text-3xl font-extrabold mb-6 text-center text-gray-800">
               币种稳定性列表
             </h2>
