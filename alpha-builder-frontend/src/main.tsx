@@ -4,9 +4,12 @@ import { RouterProvider } from "react-router-dom";
 import "./index.css";
 import "./styles/spring-bouquet.css";
 import router from "./routes/router";
+import { EmailAuthProvider } from "@/hooks/useEmailAuth";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <EmailAuthProvider>
+      <RouterProvider router={router} />
+    </EmailAuthProvider>
   </StrictMode>
 );

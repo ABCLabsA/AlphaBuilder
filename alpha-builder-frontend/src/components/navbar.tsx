@@ -1,7 +1,8 @@
-import { Book, Menu, Sunset, Trees, Zap } from "lucide-react";
+import { Book, Loader2, Menu, Sunset, Trees, Zap } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import alphaBuilderLogo from "@/assets/alphabuilder-logo.svg";
 import { cn } from "@/lib/utils";
+import { useEmailAuth } from "@/hooks/useEmailAuth";
 
 import {
   Accordion,
@@ -138,6 +139,71 @@ const Navbar = ({
     signup: { title: "Sign up", url: "/signup" },
   },
 }: NavbarProps) => {
+  const { user, status, isLoading, logout } = useEmailAuth();
+  const isAuthenticated = status === "authenticated" && !!user;
+  const loginLabel = isLoading ? (
+    <>
+      <Loader2 className="mr-2 size-4 animate-spin" />
+      Loading...
+    </>
+  ) : (
+    auth.login.title
+  );
+  const signupLabel = auth.signup.title;
+
+  const renderAuthControls = (layout: "row" | "column") => {
+    const containerClass = cn(
+      "flex gap-2",
+      layout === "column" ? "flex-col" : "items-center"
+    );
+
+    if (isAuthenticated && user) {
+      return (
+        <div className={containerClass}>
+          <span
+            className={cn(
+              "rounded-md border border-border bg-muted/60 px-3 py-2 text-sm",
+              layout === "column" ? "w-full text-center" : ""
+            )}
+          >
+            {user.email}
+          </span>
+          <Button
+            variant="outline"
+            onClick={logout}
+            className={layout === "column" ? "w-full" : undefined}
+          >
+            Log out
+          </Button>
+        </div>
+      );
+    }
+
+    return (
+      <div className={containerClass}>
+        <Button
+          asChild
+          variant="outline"
+          size="default"
+          disabled={isLoading}
+          className={layout === "column" ? "w-full" : undefined}
+        >
+          <Link to={auth.login.url} className="flex items-center">
+            {loginLabel}
+          </Link>
+        </Button>
+        <Button
+          asChild
+          size="default"
+          disabled={isLoading}
+          className={layout === "column" ? "w-full" : undefined}
+        >
+          <Link to={auth.signup.url}>{signupLabel}</Link>
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <section className="py-4">
       <div className="container">
@@ -163,13 +229,8 @@ const Navbar = ({
               </NavigationMenu>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button asChild variant="outline" size="default">
-              <Link to={auth.login.url}>{auth.login.title}</Link>
-            </Button>
-            <Button asChild size="default">
-              <Link to={auth.signup.url}>{auth.signup.title}</Link>
-            </Button>
+          <div className="flex flex-col items-end gap-1">
+            {renderAuthControls("row")}
           </div>
         </nav>
 
@@ -211,13 +272,8 @@ const Navbar = ({
                     {menu.map((item) => renderMobileMenuItem(item))}
                   </Accordion>
 
-                  <div className="flex flex-col gap-3">
-                    <Button asChild variant="outline">
-                      <Link to={auth.login.url}>{auth.login.title}</Link>
-                    </Button>
-                    <Button asChild>
-                      <Link to={auth.signup.url}>{auth.signup.title}</Link>
-                    </Button>
+                  <div className="flex flex-col gap-2">
+                    {renderAuthControls("column")}
                   </div>
                 </div>
               </SheetContent>

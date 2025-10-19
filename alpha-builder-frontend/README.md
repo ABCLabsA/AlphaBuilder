@@ -1,15 +1,12 @@
 # Alpha Builder – Frontend
 
-React + Vite dashboard for orchestrating the dual onboarding experience.
+React + Vite dashboard scaffold for account onboarding experiments.
 
 ## Features
 
-- Binance custodial users can submit API credentials, fetch live balances, and deploy a shadow AA
-  wallet whose signatures can be aggregated with the custodial key.
-- Native users start a zk-email session, receive the Poseidon commitment, and submit the proof +
-  nullifier to mint their wallet.
-- Result panel surfaces the deterministic AA address, JWT token, and (for Binance) the mirrored
-  balances returned by the backend.
+- Email + password authentication views powered by a lightweight context provider.
+- Placeholder marketing routes for products, resources, and blog content.
+- Component library based on Tailwind UI primitives for rapid iteration.
 
 ## Environment
 
@@ -17,7 +14,22 @@ Copy `.env.example` to `.env` and point to the backend:
 
 ```
 VITE_API_BASE_URL=http://localhost:4000
+VITE_AUTH_LOGIN_PATH=/auth/login
+VITE_AUTH_SIGNUP_PATH=/auth/signup
 ```
+
+The auth provider posts credentials to the configured endpoints and expects a JSON
+response of the form:
+
+```json
+{
+  "token": "<jwt-or-session-token>",
+  "user": { "email": "user@example.com", "name": "Jane Doe" }
+}
+```
+
+Adjust the response parsing in `src/hooks/useEmailAuth.tsx` if your backend returns
+different field names.
 
 ## Scripts
 
@@ -27,9 +39,3 @@ pnpm dev      # start Vite dev server
 pnpm build    # production build
 pnpm lint     # run ESLint
 ```
-
-## Proof generation
-
-The UI expects zk-email proofs as `0x`-prefixed hex strings. Integrate with your prover pipeline and
-paste the proof, nullifier, and target user operation hash into the verification form. The backend
-validates the proof against the configured on-chain verifier and consumes the nullifier.

@@ -1,7 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "@/App";
 import HomePage from "@/pages/HomePage";
+import LoginPage from "@/pages/LoginPage";
 import PagePlaceholder from "@/pages/PagePlaceholder";
+import SignupPage from "@/pages/SignupPage";
 
 const routes = [
   {
@@ -119,21 +121,11 @@ const routes = [
       },
       {
         path: "login",
-        element: (
-          <PagePlaceholder
-            title="Log In"
-            description="Mount your authentication form here."
-          />
-        ),
+        element: <LoginPage />,
       },
       {
         path: "signup",
-        element: (
-          <PagePlaceholder
-            title="Sign Up"
-            description="Collect new account details."
-          />
-        ),
+        element: <SignupPage />,
       },
       {
         path: "*",
