@@ -1,7 +1,7 @@
 import { HttpModule } from "@nestjs/axios";
 import { Module } from "@nestjs/common";
 
-import { BinanceService } from "./binance.service";
+import { BinanceService } from "./binance.service.js";
 
 @Module({
   imports: [

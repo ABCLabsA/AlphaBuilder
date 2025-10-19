@@ -1,8 +1,8 @@
 import { Body, Controller, Post } from "@nestjs/common";
 
-import { ZkEmailService } from "../services/zk-email.service";
-import { InitiateZkEmailDto } from "../validators/initiate-zk-email.dto";
-import { VerifyZkEmailDto } from "../validators/verify-zk-email.dto";
+import { ZkEmailService } from "../services/zk-email.service.js";
+import { InitiateZkEmailDto } from "../validators/initiate-zk-email.dto.js";
+import { VerifyZkEmailDto } from "../validators/verify-zk-email.dto.js";
 
 @Controller("auth/zk-email")
 export class ZkEmailController {

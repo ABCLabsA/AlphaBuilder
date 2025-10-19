@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { v4 as uuid } from "uuid";
 
-import { UserProfile, UserType } from "./interfaces/user-profile.interface";
+import { UserProfile, UserType } from "./interfaces/user-profile.interface.js";
 
 @Injectable()
 export class UsersService {

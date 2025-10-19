@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common";
 
-import { BinanceService } from "../../binance/binance.service";
-import { WalletKind } from "../../ethereum/constants";
-import { EthereumService, PredictAccountParams } from "../../ethereum/ethereum.service";
-import { UsersService } from "../../users/users.service";
-import { TokenService } from "../token.service";
-import { BinanceOnboardDto } from "../validators/binance-onboard.dto";
+import { BinanceService } from "../../binance/binance.service.js";
+import { WalletKind } from "../../ethereum/constants.js";
+import { EthereumService, PredictAccountParams } from "../../ethereum/ethereum.service.js";
+import { UsersService } from "../../users/users.service.js";
+import { TokenService } from "../token.service.js";
+import { BinanceOnboardDto } from "../validators/binance-onboard.dto.js";
 
 @Injectable()
 export class BinanceAuthService {

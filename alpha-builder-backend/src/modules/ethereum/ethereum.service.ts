@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JsonRpcProvider, Wallet, Contract, ZeroAddress, ZeroHash, TransactionReceipt } from "ethers";
 
-import { WalletKind } from "./constants";
+import { WalletKind } from "./constants.js";
 
 type HexString = `0x${string}`;
 

@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 
-import { AuthModule } from "./modules/auth/auth.module";
-import { BinanceModule } from "./modules/binance/binance.module";
-import { EthereumModule } from "./modules/ethereum/ethereum.module";
-import { UsersModule } from "./modules/users/users.module";
+import { AuthModule } from "./modules/auth/auth.module.js";
+import { BinanceModule } from "./modules/binance/binance.module.js";
+import { EthereumModule } from "./modules/ethereum/ethereum.module.js";
+import { UsersModule } from "./modules/users/users.module.js";
 
 @Module({
   imports: [

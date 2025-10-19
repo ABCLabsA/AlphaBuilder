@@ -2,13 +2,13 @@ import { Injectable, Logger, NotFoundException, UnauthorizedException } from "@n
 import { v4 as uuid } from "uuid";
 import { keccak256, toUtf8Bytes } from "ethers";
 
-import { EthereumService, PredictAccountParams } from "../../ethereum/ethereum.service";
-import { WalletKind } from "../../ethereum/constants";
-import { UsersService } from "../../users/users.service";
-import { UserProfile } from "../../users/interfaces/user-profile.interface";
-import { TokenService } from "../token.service";
-import { InitiateZkEmailDto } from "../validators/initiate-zk-email.dto";
-import { VerifyZkEmailDto } from "../validators/verify-zk-email.dto";
+import { EthereumService, PredictAccountParams } from "../../ethereum/ethereum.service.js";
+import { WalletKind } from "../../ethereum/constants.js";
+import { UsersService } from "../../users/users.service.js";
+import { UserProfile } from "../../users/interfaces/user-profile.interface.js";
+import { TokenService } from "../token.service.js";
+import { InitiateZkEmailDto } from "../validators/initiate-zk-email.dto.js";
+import { VerifyZkEmailDto } from "../validators/verify-zk-email.dto.js";
 
 interface PendingSession {
   id: string;
