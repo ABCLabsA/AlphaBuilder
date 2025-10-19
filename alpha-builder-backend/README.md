@@ -22,3 +22,19 @@
 4. 在 NestJS 应用中使用 `PrismaService`（或自定义服务）访问数据库。
 
 > 提示：生产环境请根据实际需求调整数据库账号和密码，并妥善保存迁移记录。
+
+## 数据库推送
+
+npx prisma db push
+
+## 迁移文件并应用到数据库, init 是迁移的名字
+
+npx prisma migrate dev --name init
+
+## 生成 Prisma Client
+
+npx prisma generate
+
+## 查看数据库内容
+
+npx prisma studio
