@@ -1,10 +1,10 @@
-import { Navbar1 } from './components/navbar1';
+import { Navbar } from './components/navbar';
 import { StabilityFeed } from './components/StabilityFeed';
 
 function App() {
   return (
     <>
-      <Navbar1 />
+      <Navbar />
       <StabilityFeed />
     </>
   );
