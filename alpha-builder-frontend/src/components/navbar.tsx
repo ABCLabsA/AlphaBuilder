@@ -151,7 +151,7 @@ const Navbar = ({
                 className="max-h-8 dark:invert"
                 alt={logo.alt}
               />
-              <span className="text-lg font-semibold tracking-tighter">
+              <span className="text-xl font-semibold tracking-tighter">
                 {logo.title}
               </span>
             </Link>
@@ -164,10 +164,10 @@ const Navbar = ({
             </div>
           </div>
           <div className="flex gap-2">
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="default">
               <Link to={auth.login.url}>{auth.login.title}</Link>
             </Button>
-            <Button asChild size="sm">
+            <Button asChild size="default">
               <Link to={auth.signup.url}>{auth.signup.title}</Link>
             </Button>
           </div>
@@ -233,7 +233,9 @@ const renderMenuItem = (item: MenuItem) => {
   if (item.items) {
     return (
       <NavigationMenuItem key={item.title}>
-        <NavigationMenuTrigger>{item.title}</NavigationMenuTrigger>
+        <NavigationMenuTrigger className="text-xl">
+          {item.title}
+        </NavigationMenuTrigger>
         <NavigationMenuContent className="bg-popover text-popover-foreground">
           {item.items.map((subItem) => (
             <NavigationMenuLink asChild key={subItem.title} className="w-80">
@@ -252,7 +254,7 @@ const renderMenuItem = (item: MenuItem) => {
           to={item.url}
           className={({ isActive }) =>
             cn(
-              "group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
+              "group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-xl font-medium transition-colors",
               "bg-background hover:bg-muted hover:text-accent-foreground",
               isActive && "bg-muted text-accent-foreground"
             )
@@ -287,7 +289,7 @@ const renderMobileMenuItem = (item: MenuItem) => {
       to={item.url}
       className={({ isActive }) =>
         cn(
-          "text-md font-semibold",
+          "text-xl font-semibold",
           isActive ? "text-primary" : "text-foreground"
         )
       }
@@ -311,7 +313,7 @@ const SubMenuLink = ({ item }: { item: MenuItem }) => {
     >
       <div className="text-foreground">{item.icon}</div>
       <div>
-        <div className="text-sm font-semibold">{item.title}</div>
+        <div className="text-lg font-semibold">{item.title}</div>
         {item.description && (
           <p className="text-muted-foreground text-sm leading-snug">
             {item.description}
