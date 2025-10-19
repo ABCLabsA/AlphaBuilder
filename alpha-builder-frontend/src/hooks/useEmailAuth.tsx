@@ -1,10 +1,5 @@
-import { AlchemyChainMap, LocalAccountSigner } from "@alchemy/aa-core";
-import {
-  createLightAccountAlchemyClient,
-  type AlchemyGasManagerConfig,
-} from "@alchemy/aa-alchemy";
-import type { Chain, Hex } from "viem";
-import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+import { SimpleAccountAPI } from "@account-abstraction/sdk";
+import { providers, Wallet } from "ethers";
 import {
   createContext,
   useCallback,
@@ -15,10 +10,6 @@ import {
   useState,
   type PropsWithChildren,
 } from "react";
-
-type LightAccountClient = Awaited<
-  ReturnType<typeof createLightAccountAlchemyClient>
->;
 
 type AuthStatus = "idle" | "authenticating" | "authenticated" | "error";
 
@@ -40,6 +31,14 @@ type AuthSession = {
   walletAddress?: string;
 };
 
+type StackupWalletInstance = {
+  address: string;
+  accountApi: SimpleAccountAPI;
+  owner: Wallet;
+  provider: providers.JsonRpcProvider;
+  privateKey: string;
+};
+
 type AuthState = {
   status: AuthStatus;
   user?: EmailAuthUser;
@@ -55,34 +54,37 @@ type AuthContextValue = {
   token?: string;
   error?: string;
   walletAddress?: string;
-  walletClient?: LightAccountClient;
+  walletClient?: StackupWalletInstance;
   login: (credentials: EmailAuthCredentials) => Promise<void>;
   signup: (credentials: EmailAuthCredentials) => Promise<void>;
   logout: () => void;
   dismissError: () => void;
 };
 
-type WalletInstance = {
-  address: string;
-  client: LightAccountClient;
-  privateKey: Hex;
-};
-
 const STORAGE_KEY = "emailAuthSession";
 const WALLET_KEYS_STORAGE = "emailAuthWalletKeys";
-const DEFAULT_CHAIN_ID = 84532;
+const DEFAULT_ENTRY_POINT = "0x0576a174D229E3cFA37253523E645A78A0C91B57";
+const DEFAULT_SIMPLE_ACCOUNT_FACTORY = "0x9406Cc6185a346906296840746125a0E44976454";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 const AUTH_LOGIN_PATH =
   import.meta.env.VITE_AUTH_LOGIN_PATH?.trim() || "/auth/login";
 const AUTH_SIGNUP_PATH =
   import.meta.env.VITE_AUTH_SIGNUP_PATH?.trim() || "/auth/signup";
-const ALCHEMY_API_KEY = import.meta.env.VITE_ALCHEMY_API_KEY;
-const ALCHEMY_CHAIN = import.meta.env.VITE_ALCHEMY_CHAIN;
-const ALCHEMY_GAS_POLICY_ID = import.meta.env.VITE_ALCHEMY_GAS_POLICY_ID;
+
+const STACKUP_RPC_URL = import.meta.env.VITE_STACKUP_RPC_URL ?? "";
+const STACKUP_ENTRY_POINT =
+  import.meta.env.VITE_STACKUP_ENTRY_POINT?.trim() || DEFAULT_ENTRY_POINT;
+const STACKUP_FACTORY_ADDRESS =
+  import.meta.env.VITE_STACKUP_FACTORY_ADDRESS?.trim() ||
+  DEFAULT_SIMPLE_ACCOUNT_FACTORY;
+const STACKUP_CHAIN_ID = import.meta.env.VITE_STACKUP_CHAIN_ID
+  ? Number(import.meta.env.VITE_STACKUP_CHAIN_ID)
+  : undefined;
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
-const loadWalletKeyMap = (): Record<string, Hex> => {
+const loadWalletKeyMap = (): Record<string, string> => {
   if (typeof window === "undefined") {
     return {};
   }
@@ -92,23 +94,21 @@ const loadWalletKeyMap = (): Record<string, Hex> => {
   }
   try {
     const parsed = JSON.parse(raw) as Record<string, string>;
-    return Object.fromEntries(
-      Object.entries(parsed).map(([key, value]) => [key, value as Hex])
-    );
+    return parsed;
   } catch {
     window.localStorage.removeItem(WALLET_KEYS_STORAGE);
     return {};
   }
 };
 
-const persistWalletKeyMap = (map: Record<string, Hex>) => {
+const persistWalletKeyMap = (map: Record<string, string>) => {
   if (typeof window === "undefined") {
     return;
   }
   window.localStorage.setItem(WALLET_KEYS_STORAGE, JSON.stringify(map));
 };
 
-const getOrCreateWalletKey = (normalizedEmail: string): Hex => {
+const getOrCreateWalletKey = (normalizedEmail: string): string => {
   if (typeof window === "undefined") {
     throw new Error("Wallet initialization requires a browser environment.");
   }
@@ -116,43 +116,10 @@ const getOrCreateWalletKey = (normalizedEmail: string): Hex => {
   if (map[normalizedEmail]) {
     return map[normalizedEmail];
   }
-  const privateKey = generatePrivateKey();
-  map[normalizedEmail] = privateKey;
+  const wallet = Wallet.createRandom();
+  map[normalizedEmail] = wallet.privateKey;
   persistWalletKeyMap(map);
-  return privateKey;
-};
-
-const resolveChain = (value?: string): Chain => {
-  const chains = Array.from(AlchemyChainMap.values());
-  const defaultChain =
-    chains.find((chain) => chain.id === DEFAULT_CHAIN_ID) ?? chains[0];
-  if (!value) {
-    if (!defaultChain) {
-      throw new Error("Alchemy chain map is empty.");
-    }
-    return defaultChain;
-  }
-  const normalized = value.trim().toLowerCase();
-  const directMatch = chains.find((chain) => {
-    const metadata = chain as unknown as { network?: string };
-    const aliases = [
-      chain.id.toString(),
-      chain.name.toLowerCase(),
-      metadata.network?.toLowerCase(),
-    ].filter(Boolean) as string[];
-    return aliases.includes(normalized);
-  });
-  if (directMatch) {
-    return directMatch;
-  }
-  const numericId = Number(normalized);
-  if (!Number.isNaN(numericId)) {
-    const chain = AlchemyChainMap.get(numericId);
-    if (chain) {
-      return chain;
-    }
-  }
-  throw new Error(`Unsupported chain alias "${value}" for Alchemy AA wallet.`);
+  return wallet.privateKey;
 };
 
 const EmailAuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -291,44 +258,51 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
   });
 
   const [initialised, setInitialised] = useState(false);
-  const [walletClient, setWalletClient] = useState<LightAccountClient>();
-  const walletPromises = useRef<Map<string, Promise<WalletInstance>>>(
+  const [walletClient, setWalletClient] = useState<StackupWalletInstance>();
+  const walletPromises = useRef<Map<string, Promise<StackupWalletInstance>>>(
     new Map()
   );
 
   const ensureWallet = useCallback(
-    async (email: string) => {
+    async (email: string): Promise<StackupWalletInstance> => {
+      if (!STACKUP_RPC_URL) {
+        throw new Error("Missing VITE_STACKUP_RPC_URL for AA wallet provisioning.");
+      }
       if (!email) {
         throw new Error("Email is required to initialize the AA wallet.");
       }
-      if (!ALCHEMY_API_KEY) {
-        throw new Error("Missing VITE_ALCHEMY_API_KEY for AA wallet provisioning.");
-      }
+
       const normalized = normalizeEmail(email);
       let walletPromise = walletPromises.current.get(normalized);
       if (!walletPromise) {
         walletPromise = (async () => {
-          const chain = resolveChain(ALCHEMY_CHAIN);
           const privateKey = getOrCreateWalletKey(normalized);
-          const account = privateKeyToAccount(privateKey);
-          const signer = new LocalAccountSigner(account);
-          const config: Parameters<typeof createLightAccountAlchemyClient>[0] = {
-            apiKey: ALCHEMY_API_KEY,
-            chain,
-            signer,
+          const provider = new providers.JsonRpcProvider(
+            STACKUP_RPC_URL,
+            STACKUP_CHAIN_ID
+          );
+          const owner = new Wallet(privateKey, provider);
+          const accountApi = new SimpleAccountAPI({
+            provider,
+            entryPointAddress: STACKUP_ENTRY_POINT,
+            owner,
+            factoryAddress: STACKUP_FACTORY_ADDRESS,
+          });
+
+          await accountApi.init();
+          const address = await accountApi.getAccountAddress();
+
+          return {
+            address,
+            accountApi,
+            owner,
+            provider,
+            privateKey,
           };
-          if (ALCHEMY_GAS_POLICY_ID) {
-            const gasManagerConfig: AlchemyGasManagerConfig = {
-              policyId: ALCHEMY_GAS_POLICY_ID,
-            };
-            config.gasManagerConfig = gasManagerConfig;
-          }
-          const client = await createLightAccountAlchemyClient(config);
-          const address = client.getAddress();
-          return { address, client, privateKey };
         })();
         walletPromises.current.set(normalized, walletPromise);
       }
+
       try {
         return await walletPromise;
       } catch (error) {
@@ -351,9 +325,18 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
         token: stored.token,
         walletAddress: stored.walletAddress,
       });
+      if (stored.user?.email && stored.walletAddress) {
+        void ensureWallet(stored.user.email)
+          .then((instance) => {
+            setWalletClient(instance);
+          })
+          .catch((error) => {
+            console.error("Failed to restore Stackup wallet", error);
+          });
+      }
     }
     setInitialised(true);
-  }, [initialised]);
+  }, [ensureWallet, initialised]);
 
   const handleAuth = useCallback(
     async (path: string, credentials: EmailAuthCredentials) => {
@@ -371,7 +354,7 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
           walletAddress: wallet.address,
         };
         persistSession(nextSession);
-        setWalletClient(wallet.client);
+        setWalletClient(wallet);
         setState({
           status: "authenticated",
           user: session.user,
@@ -398,62 +381,47 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
     if (state.walletAddress && walletClient) {
       return;
     }
-    const currentUser = state.user;
-    const currentToken = state.token;
-    const normalizedEmail = normalizeEmail(currentUser.email);
     let cancelled = false;
-    ensureWallet(currentUser.email)
-      .then(({ address, client }) => {
+    ensureWallet(state.user.email)
+      .then((wallet) => {
         if (cancelled) {
           return;
         }
-        setWalletClient(client);
+        setWalletClient(wallet);
         setState((prev) => {
-          if (prev.status !== "authenticated" || prev.walletAddress === address) {
+          if (prev.status !== "authenticated" || prev.walletAddress === wallet.address) {
             return prev;
           }
-          return { ...prev, walletAddress: address };
+          const nextState = { ...prev, walletAddress: wallet.address };
+          const storedSession = loadStoredSession();
+          const tokenToPersist =
+            nextState.token ?? storedSession?.token ?? prev.token;
+          if (tokenToPersist && nextState.user) {
+            persistSession({
+              token: tokenToPersist,
+              user: nextState.user,
+              walletAddress: wallet.address,
+            });
+          }
+          return nextState;
         });
-        const stored = loadStoredSession();
-        if (
-          stored &&
-          normalizeEmail(stored.user.email) === normalizedEmail
-        ) {
-          persistSession({
-            token: stored.token,
-            user: stored.user,
-            walletAddress: address,
-          });
-        } else if (currentToken) {
-          persistSession({
-            token: currentToken,
-            user: currentUser,
-            walletAddress: address,
-          });
-        }
       })
       .catch((error) => {
         if (cancelled) {
           return;
         }
-        console.error("Failed to initialize AA wallet", error);
+        console.error("Failed to initialize Stackup wallet", error);
         setState((prev) => ({
           ...prev,
           status: "error",
           error: error instanceof Error ? error.message : String(error),
         }));
       });
+
     return () => {
       cancelled = true;
     };
-  }, [
-    ensureWallet,
-    state.status,
-    state.user,
-    state.walletAddress,
-    state.token,
-    walletClient,
-  ]);
+  }, [ensureWallet, state.status, state.user, state.walletAddress, walletClient]);
 
   const login = useCallback(
     (credentials: EmailAuthCredentials) =>
@@ -469,6 +437,7 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
 
   const logout = useCallback(() => {
     clearStoredSession();
+    setWalletClient(undefined);
     setState({
       status: "idle",
       user: undefined,
@@ -476,7 +445,6 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
       walletAddress: undefined,
       error: undefined,
     });
-    setWalletClient(undefined);
   }, []);
 
   const dismissError = useCallback(() => {
