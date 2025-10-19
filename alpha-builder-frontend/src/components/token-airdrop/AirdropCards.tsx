@@ -1,13 +1,13 @@
+import { useEffect, useState } from "react";
 import {
   CalendarDays,
   Gift,
-  Globe2,
-  Globe,
   Coins,
-  Languages,
   AlertCircle,
   CheckCircle2,
   Hash,
+  Copy,
+  Check,
 } from "lucide-react";
 import type { AirdropItem } from "@/hooks/useAirdropFeed";
 import { Button } from "@/components/ui/button";
@@ -70,6 +70,50 @@ function formatValue(value?: string | number | boolean | null) {
 }
 
 const SKELETON_ITEMS = Array.from({ length: 3 });
+
+function CopyAddressButton({ address }: { address: string }) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) {
+      return;
+    }
+    const timer = window.setTimeout(() => setCopied(false), 1800);
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [copied]);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+    } catch (error) {
+      console.error("无法复制合约地址", error);
+      setCopied(false);
+    }
+  };
+
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={handleCopy}
+      className={cn(
+        "gap-2 rounded-full border-border/70 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all",
+        "hover:border-primary/70 hover:text-primary focus-visible:ring-primary/30"
+      )}
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5 text-emerald-500" />
+      ) : (
+        <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+      )}
+      {copied ? "已复制" : "复制地址"}
+    </Button>
+  );
+}
 
 export function AirdropCards({
   items,
@@ -246,43 +290,40 @@ export function AirdropCards({
                         </div>
                       ) : null}
 
-                      {airdrop.language ? (
+                      {/* {airdrop.language ? (
                         <div className="flex items-center gap-2">
                           <Languages className="h-4 w-4 text-blue-500" />
                           <span>语言：{airdrop.language}</span>
                         </div>
-                      ) : null}
-
-                      {(airdrop.futures_listed || airdrop.spot_listed) && (
-                        <div className="flex items-center gap-2">
-                          <Globe2 className="h-4 w-4 text-violet-500" />
-                          <span>
-                            合约：
-                            {[
-                              airdrop.spot_listed ? "现货" : null,
-                              airdrop.futures_listed ? "合约" : null,
-                            ]
-                              .filter(Boolean)
-                              .join(" / ") || "未上市"}
-                          </span>
-                        </div>
-                      )}
+                      ) : null} */}
 
                       {airdrop.contract_address ? (
-                        <div className="flex items-start gap-2">
-                          <Hash className="h-4 w-4 text-muted-foreground/80" />
-                          <span className="break-all">
-                            {airdrop.contract_address}
-                          </span>
+                        <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
+                          <div className="flex items-start gap-3">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-background text-muted-foreground/90 shadow-sm">
+                              <Hash className="h-4 w-4" />
+                            </div>
+                            <div className="flex flex-1 flex-col gap-2">
+                              <div className="flex flex-col gap-1">
+                                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/70">
+                                  合约地址
+                                </span>
+                                <span className="font-mono text-sm font-medium text-foreground/90 break-all">
+                                  {airdrop.contract_address}
+                                </span>
+                              </div>
+                              <CopyAddressButton address={airdrop.contract_address} />
+                            </div>
+                          </div>
                         </div>
                       ) : null}
 
-                      {airdrop.chain_id ? (
+                      {/* {airdrop.chain_id ? (
                         <div className="flex items-center gap-2">
                           <Globe className="h-4 w-4 text-muted-foreground/80" />
                           <span>链：{airdrop.chain_id}</span>
                         </div>
-                      ) : null}
+                      ) : null} */}
                     </div>
                   </article>
                 );

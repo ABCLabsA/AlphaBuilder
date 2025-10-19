@@ -49,12 +49,17 @@ export function useAirdropFeed(options: UseAirdropFeedOptions = {}) {
       const source = Array.isArray(json.airdrops) ? json.airdrops : [];
 
       const airdrops = [...source].sort((a, b) => {
+        const dateA = a?.date ? new Date(a.date).getTime() : 0;
+        const dateB = b?.date ? new Date(b.date).getTime() : 0;
+
+        if (dateA !== dateB) return dateA - dateB;
 
         const timeA =
           a?.updated_timestamp ?? a?.system_timestamp ?? a?.created_timestamp ?? 0;
         const timeB =
           b?.updated_timestamp ?? b?.system_timestamp ?? b?.created_timestamp ?? 0;
-        return timeB - timeA;
+
+        return timeA - timeB;
       });
 
       return { airdrops };
