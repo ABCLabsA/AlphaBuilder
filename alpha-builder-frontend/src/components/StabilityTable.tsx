@@ -1,4 +1,10 @@
-import { Coins, DollarSign, Activity, Clock, Shield } from "lucide-react";
+import { Coins, DollarSign, Activity, Clock, Shield, Info, Lightbulb, BarChart3, Cog, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import type { StabilityItem } from "@/hooks/useStabilityFeed";
 import { cn } from "@/lib/utils";
@@ -129,6 +135,46 @@ export function StabilityTable({
               </div>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* 📘 稳定度看板说明（可折叠） */}
+      <div className="px-6 pb-4">
+        <div className="max-w-[900px] mx-auto">
+          <Accordion type="single" collapsible defaultValue="stability-info" className="w-full">
+            <AccordionItem value="stability-info" className="border-none">
+              <AccordionTrigger
+                className="group relative flex items-center justify-center gap-2 text-base font-semibold text-foreground bg-muted/20 rounded-lg px-4 py-3 hover:bg-muted/30 transition [&>svg]:hidden"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Info className="w-4 h-4 text-primary" />
+                  稳定度看板说明
+                  <ChevronUp className="w-4 h-4 text-muted-foreground transition-transform group-data-[state=closed]:hidden" />
+                  <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-data-[state=open]:hidden" />
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground bg-muted/10 rounded-b-lg px-5 py-4 space-y-3 leading-relaxed text-center">
+                <p className="flex items-start justify-center gap-2">
+                  <Cog className="w-4 h-4 mt-0.5 text-muted-foreground shrink-0" />
+                  <span>判定标准基于价格区间、成交量波动、异常涨跌和短期趋势等多个指标综合计算。</span>
+                </p>
+                <p className="flex items-start justify-center gap-2">
+                  <Lightbulb className="w-4 h-4 mt-0.5 text-amber-500 shrink-0" />
+                  <span>
+                    <strong>价差</strong> 表示成交记录列表的差异，越小越稳定，首选{" "}
+                    <span className="text-emerald-600 font-semibold">双绿色</span>。
+                    1 个基点表示 1 万 U 增加 1 U 磨损。
+                  </span>
+                </p>
+                <p className="flex items-start justify-center gap-2">
+                  <BarChart3 className="w-4 h-4 mt-0.5 text-blue-500 shrink-0" />
+                  <span>
+                    <strong>排序说明：</strong>KOGE（1 倍）可作为稳定基线，比它靠前的币种通常更稳定。
+                  </span>
+                </p>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </div>
 
