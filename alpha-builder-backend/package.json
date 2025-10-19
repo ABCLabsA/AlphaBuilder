@@ -8,9 +8,13 @@
     "start:dev": "tsx watch src/main.ts",
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint \"src/**/*.ts\" --max-warnings 0",
-    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.mjs"
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config jest.config.mjs",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
   },
   "dependencies": {
+    "@prisma/client": "^5.20.0",
     "@nestjs/axios": "^3.0.2",
     "@nestjs/common": "^10.4.7",
     "@nestjs/config": "^3.2.2",
@@ -27,6 +31,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "prisma": "^5.20.0",
     "@typescript-eslint/eslint-plugin": "^8.7.0",
     "@typescript-eslint/parser": "^8.7.0",
     "@types/jsonwebtoken": "^9.0.5",

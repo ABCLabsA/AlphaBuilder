@@ -5,7 +5,7 @@ export interface UserProfile {
   type: UserType;
   emailCommitment?: `0x${string}`;
   binanceWallet?: string;
-  aaWalletAddress?: string;
+  aaWalletAddress: string;
   ownerAddress: string;
   salt: string;
   createdAt: Date;

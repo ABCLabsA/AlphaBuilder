@@ -37,7 +37,7 @@ export class BinanceAuthService {
       aaWalletAddress = await this.ethereumService.predictAccountAddress(params);
     }
 
-    const user = this.usersService.createProfile({
+    const user = await this.usersService.createProfile({
       type: "BINANCE_SHADOW",
       emailCommitment: undefined,
       binanceWallet: dto.binanceWalletAddress,

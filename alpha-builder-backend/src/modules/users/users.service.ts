@@ -1,43 +1,106 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { v4 as uuid } from "uuid";
+import { Prisma, User as PrismaUser, UserType as PrismaUserType } from "@prisma/client";
 
+import { PrismaService } from "../../prisma/prisma.service.js";
 import { UserProfile, UserType } from "./interfaces/user-profile.interface.js";
+
+type CreateProfileInput = Omit<UserProfile, "id" | "createdAt" | "updatedAt">;
 
 @Injectable()
 export class UsersService {
-  private readonly store = new Map<string, UserProfile>();
+  constructor(private readonly prisma: PrismaService) {}
 
-  createProfile(data: Omit<UserProfile, "id" | "createdAt" | "updatedAt">): UserProfile {
-    const id = uuid();
-    const now = new Date();
-    const profile: UserProfile = { id, createdAt: now, updatedAt: now, ...data };
-    this.store.set(id, profile);
-    return profile;
+  async createProfile(data: CreateProfileInput): Promise<UserProfile> {
+    const user = await this.prisma.user.create({
+      data: {
+        type: data.type as PrismaUserType,
+        emailCommitment: data.emailCommitment ?? null,
+        binanceWallet: data.binanceWallet ?? null,
+        aaWalletAddress: data.aaWalletAddress,
+        ownerAddress: data.ownerAddress,
+        salt: data.salt
+      }
+    });
+    return this.toProfile(user);
   }
 
-  updateProfile(id: string, changes: Partial<UserProfile>): UserProfile {
-    const existing = this.store.get(id);
-    if (!existing) {
+  async updateProfile(id: string, changes: Partial<UserProfile>): Promise<UserProfile> {
+    try {
+      const user = await this.prisma.user.update({
+        where: { id },
+        data: this.buildUpdateData(changes)
+      });
+      return this.toProfile(user);
+    } catch (error) {
+      if (this.isRecordNotFound(error)) {
+        throw new NotFoundException(`User ${id} not found`);
+      }
+      throw error;
+    }
+  }
+
+  async findById(id: string): Promise<UserProfile> {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
       throw new NotFoundException(`User ${id} not found`);
     }
-    const updated: UserProfile = { ...existing, ...changes, updatedAt: new Date() };
-    this.store.set(id, updated);
-    return updated;
+    return this.toProfile(user);
   }
 
-  findById(id: string): UserProfile {
-    const profile = this.store.get(id);
-    if (!profile) {
-      throw new NotFoundException(`User ${id} not found`);
+  async findByAAWallet(address: string): Promise<UserProfile | null> {
+    const user = await this.prisma.user.findUnique({ where: { aaWalletAddress: address } });
+    return user ? this.toProfile(user) : null;
+  }
+
+  async findManyByType(type: UserType): Promise<UserProfile[]> {
+    const users = await this.prisma.user.findMany({
+      where: { type: type as PrismaUserType },
+      orderBy: { createdAt: "desc" }
+    });
+    return users.map((user) => this.toProfile(user));
+  }
+
+  private toProfile(user: PrismaUser): UserProfile {
+    return {
+      id: user.id,
+      type: user.type as UserType,
+      emailCommitment: user.emailCommitment ?? undefined,
+      binanceWallet: user.binanceWallet ?? undefined,
+      aaWalletAddress: user.aaWalletAddress,
+      ownerAddress: user.ownerAddress,
+      salt: user.salt,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt
+    };
+  }
+
+  private buildUpdateData(changes: Partial<UserProfile>): Prisma.UserUpdateInput {
+    const data: Prisma.UserUpdateInput = {};
+    if (changes.type) {
+      data.type = changes.type as PrismaUserType;
     }
-    return profile;
+    if (changes.emailCommitment !== undefined) {
+      data.emailCommitment = changes.emailCommitment ?? null;
+    }
+    if (changes.binanceWallet !== undefined) {
+      data.binanceWallet = changes.binanceWallet ?? null;
+    }
+    if (changes.aaWalletAddress) {
+      data.aaWalletAddress = changes.aaWalletAddress;
+    }
+    if (changes.ownerAddress) {
+      data.ownerAddress = changes.ownerAddress;
+    }
+    if (changes.salt) {
+      data.salt = changes.salt;
+    }
+    return data;
   }
 
-  findByAAWallet(address: string): UserProfile | undefined {
-    return Array.from(this.store.values()).find((profile) => profile.aaWalletAddress === address);
-  }
-
-  findManyByType(type: UserType): UserProfile[] {
-    return Array.from(this.store.values()).filter((profile) => profile.type === type);
+  private isRecordNotFound(error: unknown): boolean {
+    if (typeof error !== "object" || error === null) {
+      return false;
+    }
+    return (error as { code?: string }).code === "P2025";
   }
 }

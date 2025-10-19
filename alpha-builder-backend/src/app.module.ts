@@ -5,6 +5,7 @@ import { AuthModule } from "./modules/auth/auth.module.js";
 import { BinanceModule } from "./modules/binance/binance.module.js";
 import { EthereumModule } from "./modules/ethereum/ethereum.module.js";
 import { UsersModule } from "./modules/users/users.module.js";
+import { PrismaModule } from "./prisma/prisma.module.js";
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { UsersModule } from "./modules/users/users.module.js";
       isGlobal: true,
       envFilePath: [".env", ".env.local"]
     }),
+    PrismaModule,
     EthereumModule,
     UsersModule,
     BinanceModule,

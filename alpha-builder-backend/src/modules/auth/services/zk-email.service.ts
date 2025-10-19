@@ -83,7 +83,7 @@ export class ZkEmailService {
       aaWalletAddress = await this.ethereumService.predictAccountAddress(params);
     }
 
-    const user: UserProfile = this.usersService.createProfile({
+    const user: UserProfile = await this.usersService.createProfile({
       type: "NATIVE",
       emailCommitment: pending.emailCommitment,
       binanceWallet: undefined,
