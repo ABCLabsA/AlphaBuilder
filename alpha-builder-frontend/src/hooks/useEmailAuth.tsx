@@ -48,6 +48,7 @@ type AuthSession = {
   token: string;
   user: EmailAuthUser;
   walletAddress?: string;
+  walletPrivateKeyEncrypted?: string;
 };
 
 type KernelAccountInstance = CreateKernelAccountReturnType<"0.7">;
@@ -66,6 +67,7 @@ type AuthState = {
   user?: EmailAuthUser;
   token?: string;
   walletAddress?: string;
+  walletPrivateKeyEncrypted?: string;
   error?: string;
 };
 
@@ -76,11 +78,18 @@ type AuthContextValue = {
   token?: string;
   error?: string;
   walletAddress?: string;
+  walletPrivateKeyEncrypted?: string;
   walletClient?: ZeroDevWalletInstance;
   login: (credentials: EmailAuthCredentials) => Promise<void>;
   signup: (credentials: EmailAuthCredentials) => Promise<void>;
   logout: () => void;
   dismissError: () => void;
+};
+
+type EnsureWalletOptions = {
+  encryptedPrivateKey?: string;
+  decryptedPrivateKey?: Hex;
+  expectedAddress?: string;
 };
 
 const STORAGE_KEY = "emailAuthSession";
@@ -126,18 +135,47 @@ const persistWalletKeyMap = (map: Record<string, string>) => {
   window.localStorage.setItem(WALLET_KEYS_STORAGE, JSON.stringify(map));
 };
 
-const getOrCreateWalletKey = (normalizedEmail: string): Hex => {
+const rememberEncryptedWalletKey = (
+  normalizedEmail: string,
+  encryptedKey: string
+) => {
   if (typeof window === "undefined") {
-    throw new Error("Wallet initialization requires a browser environment.");
+    return;
   }
   const map = loadWalletKeyMap();
-  if (map[normalizedEmail]) {
-    return map[normalizedEmail] as Hex;
+  if (map[normalizedEmail] !== encryptedKey) {
+    map[normalizedEmail] = encryptedKey;
+    persistWalletKeyMap(map);
   }
-  const privateKey = generatePrivateKey();
-  map[normalizedEmail] = privateKey;
-  persistWalletKeyMap(map);
+};
+
+const getStoredEncryptedWalletKey = (
+  normalizedEmail: string
+): string | undefined => {
+  const map = loadWalletKeyMap();
+  return map[normalizedEmail];
+};
+
+const encodePrivateKey = (privateKey: Hex): string => {
+  try {
+    if (typeof window !== "undefined" && typeof window.btoa === "function") {
+      return window.btoa(privateKey);
+    }
+  } catch {
+    return privateKey;
+  }
   return privateKey;
+};
+
+const decodePrivateKey = (encrypted: string): Hex => {
+  try {
+    if (typeof window !== "undefined" && typeof window.atob === "function") {
+      return window.atob(encrypted) as Hex;
+    }
+  } catch {
+    return encrypted as Hex;
+  }
+  return encrypted as Hex;
 };
 
 const extractChainIdFromUrl = (rpcUrl: string): number | undefined => {
@@ -276,9 +314,14 @@ const clearStoredSession = () => {
   window.localStorage.removeItem(STORAGE_KEY);
 };
 
+type AuthRequestBody = EmailAuthCredentials & {
+  walletAddress?: string;
+  walletPrivateKeyEncrypted?: string;
+};
+
 const requestAuthSession = async (
   path: string,
-  body: EmailAuthCredentials
+  body: AuthRequestBody
 ): Promise<AuthSession> => {
   const response = await fetch(resolveEndpoint(path), {
     method: "POST",
@@ -301,6 +344,20 @@ const requestAuthSession = async (
       token?: string;
       accessToken?: string;
       user?: EmailAuthUser;
+      walletAddress?: string;
+      walletPrivateKeyEncrypted?: string;
+      wallet?: {
+        address?: string;
+        privateKeyEncrypted?: string;
+        walletPrivateKeyEncrypted?: string;
+      };
+    };
+    walletAddress?: string;
+    walletPrivateKeyEncrypted?: string;
+    wallet?: {
+      address?: string;
+      privateKeyEncrypted?: string;
+      walletPrivateKeyEncrypted?: string;
     };
   };
 
@@ -319,22 +376,33 @@ const requestAuthSession = async (
     throw new Error("Authentication response is missing user details.");
   }
 
-  return { token, user };
+  const walletAddress =
+    payload.walletAddress ??
+    payload.wallet?.address ??
+    payload.wallet?.walletAddress;
+
+  const walletPrivateKeyEncrypted =
+    payload.walletPrivateKeyEncrypted ??
+    payload.wallet?.walletPrivateKeyEncrypted ??
+    payload.wallet?.privateKeyEncrypted;
+
+  return { token, user, walletAddress, walletPrivateKeyEncrypted };
 };
 
 export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
   const [state, setState] = useState<AuthState>(() => {
     const stored = loadStoredSession();
-    if (stored) {
-      return {
-        status: "authenticated",
-        user: stored.user,
-        token: stored.token,
-        walletAddress: stored.walletAddress,
-      };
-    }
-    return { status: "idle" };
-  });
+  if (stored) {
+    return {
+      status: "authenticated",
+      user: stored.user,
+      token: stored.token,
+      walletAddress: stored.walletAddress,
+      walletPrivateKeyEncrypted: stored.walletPrivateKeyEncrypted,
+    };
+  }
+  return { status: "idle" };
+});
 
   const [initialised, setInitialised] = useState(false);
   const [walletClient, setWalletClient] = useState<ZeroDevWalletInstance>();
@@ -343,7 +411,10 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
   );
 
   const ensureWallet = useCallback(
-    async (email: string): Promise<ZeroDevWalletInstance> => {
+    async (
+      email: string,
+      options: EnsureWalletOptions = {}
+    ): Promise<ZeroDevWalletInstance> => {
       if (!ZERODEV_RPC_URL) {
         throw new Error(
           "Missing VITE_ZERODEV_RPC_URL for AA wallet provisioning."
@@ -354,10 +425,47 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
       }
 
       const normalized = normalizeEmail(email);
-      let walletPromise = walletPromises.current.get(normalized);
+      let encryptedKey =
+        options.encryptedPrivateKey ??
+        (state.user?.email &&
+        normalizeEmail(state.user.email) === normalized
+          ? state.walletPrivateKeyEncrypted
+          : undefined);
+
+      if (!encryptedKey) {
+        const stored = loadStoredSession();
+        if (
+          stored?.user?.email &&
+          normalizeEmail(stored.user.email) === normalized
+        ) {
+          encryptedKey = stored.walletPrivateKeyEncrypted;
+        }
+      }
+
+      if (!encryptedKey) {
+        encryptedKey = getStoredEncryptedWalletKey(normalized);
+      }
+
+      const decryptedPrivateKey =
+        options.decryptedPrivateKey ??
+        (encryptedKey ? decodePrivateKey(encryptedKey) : undefined);
+
+      if (!encryptedKey && decryptedPrivateKey) {
+        encryptedKey = encodePrivateKey(decryptedPrivateKey);
+      }
+
+      if (!encryptedKey || !decryptedPrivateKey) {
+        throw new Error(
+          "Unable to locate wallet credentials for the current user."
+        );
+      }
+
+      rememberEncryptedWalletKey(normalized, encryptedKey);
+
+      const promiseKey = `${normalized}:${decryptedPrivateKey}`;
+      let walletPromise = walletPromises.current.get(promiseKey);
       if (!walletPromise) {
         walletPromise = (async () => {
-          const privateKey = getOrCreateWalletKey(normalized);
           const chain = createZeroDevChain(ZERODEV_RPC_URL, ZERODEV_CHAIN_ID);
           const entryPoint = resolveEntryPoint();
           const publicClient = createPublicClient({
@@ -365,7 +473,7 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
             transport: http(ZERODEV_RPC_URL),
           });
 
-          const signer = privateKeyToAccount(privateKey);
+          const signer = privateKeyToAccount(decryptedPrivateKey as Hex);
           const validator = await signerToEcdsaValidator(publicClient, {
             signer,
             entryPoint,
@@ -411,21 +519,31 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
             account,
             client,
             signer,
-            privateKey,
+            privateKey: decryptedPrivateKey as Hex,
             chain,
           };
         })();
-        walletPromises.current.set(normalized, walletPromise);
+        walletPromises.current.set(promiseKey, walletPromise);
       }
 
       try {
-        return await walletPromise;
+        const wallet = await walletPromise;
+        if (
+          options.expectedAddress &&
+          wallet.address.toLowerCase() !==
+            options.expectedAddress.toLowerCase()
+        ) {
+          console.warn(
+            "Resolved wallet address does not match expected address from backend."
+          );
+        }
+        return wallet;
       } catch (error) {
-        walletPromises.current.delete(normalized);
+        walletPromises.current.delete(promiseKey);
         throw error;
       }
     },
-    []
+    [state.user?.email, state.walletPrivateKeyEncrypted]
   );
 
   useEffect(() => {
@@ -433,20 +551,24 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
       return;
     }
     const stored = loadStoredSession();
-    if (stored) {
-      setState({
-        status: "authenticated",
-        user: stored.user,
-        token: stored.token,
-        walletAddress: stored.walletAddress,
-      });
-      if (stored.user?.email && stored.walletAddress) {
-        void ensureWallet(stored.user.email)
-          .then((instance) => {
-            setWalletClient(instance);
-          })
-          .catch((error) => {
-            console.error("Failed to restore ZeroDev wallet", error);
+  if (stored) {
+    setState({
+      status: "authenticated",
+      user: stored.user,
+      token: stored.token,
+      walletAddress: stored.walletAddress,
+      walletPrivateKeyEncrypted: stored.walletPrivateKeyEncrypted,
+    });
+    if (stored.user?.email && stored.walletPrivateKeyEncrypted) {
+      void ensureWallet(stored.user.email, {
+        encryptedPrivateKey: stored.walletPrivateKeyEncrypted,
+        expectedAddress: stored.walletAddress,
+      })
+        .then((instance) => {
+          setWalletClient(instance);
+        })
+        .catch((error) => {
+          console.error("Failed to restore ZeroDev wallet", error);
           });
       }
     }
@@ -461,12 +583,58 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
         error: undefined,
       }));
       try {
-        const session = await requestAuthSession(path, credentials);
-        const wallet = await ensureWallet(session.user.email);
+        let signupMaterial:
+          | {
+              privateKey: Hex;
+              encrypted: string;
+              address: string;
+            }
+          | undefined;
+
+        if (path === AUTH_SIGNUP_PATH) {
+          const privateKey = generatePrivateKey();
+          const encrypted = encodePrivateKey(privateKey);
+          const address = privateKeyToAccount(privateKey).address;
+          signupMaterial = { privateKey, encrypted, address };
+        }
+
+        const session = await requestAuthSession(path, {
+          ...credentials,
+          ...(signupMaterial
+            ? {
+                walletAddress: signupMaterial.address,
+                walletPrivateKeyEncrypted: signupMaterial.encrypted,
+              }
+            : {}),
+        });
+
+        const responseEncryptedKey =
+          session.walletPrivateKeyEncrypted ?? signupMaterial?.encrypted;
+        const responseWalletAddress =
+          session.walletAddress ?? signupMaterial?.address;
+
+        if (!responseEncryptedKey) {
+          throw new Error(
+            "Authentication response is missing wallet credentials."
+          );
+        }
+
+        rememberEncryptedWalletKey(
+          normalizeEmail(session.user.email),
+          responseEncryptedKey
+        );
+
+        const wallet = await ensureWallet(session.user.email, {
+          encryptedPrivateKey: responseEncryptedKey,
+          decryptedPrivateKey: signupMaterial?.privateKey,
+          expectedAddress: responseWalletAddress,
+        });
+
         const nextSession: AuthSession = {
           token: session.token,
           user: session.user,
           walletAddress: wallet.address,
+          walletPrivateKeyEncrypted: responseEncryptedKey,
         };
         persistSession(nextSession);
         setWalletClient(wallet);
@@ -475,6 +643,7 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
           user: session.user,
           token: session.token,
           walletAddress: wallet.address,
+          walletPrivateKeyEncrypted: responseEncryptedKey,
           error: undefined,
         });
       } catch (error) {
@@ -497,7 +666,10 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
       return;
     }
     let cancelled = false;
-    ensureWallet(state.user.email)
+    ensureWallet(state.user.email, {
+      encryptedPrivateKey: state.walletPrivateKeyEncrypted,
+      expectedAddress: state.walletAddress,
+    })
       .then((wallet) => {
         if (cancelled) {
           return;
@@ -516,6 +688,10 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
               token: tokenToPersist,
               user: nextState.user,
               walletAddress: wallet.address,
+              walletPrivateKeyEncrypted:
+                nextState.walletPrivateKeyEncrypted ??
+                storedSession?.walletPrivateKeyEncrypted ??
+                state.walletPrivateKeyEncrypted,
             });
           }
           return nextState;
@@ -536,7 +712,14 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
     return () => {
       cancelled = true;
     };
-  }, [ensureWallet, state.status, state.user, state.walletAddress, walletClient]);
+  }, [
+    ensureWallet,
+    state.status,
+    state.user,
+    state.walletAddress,
+    state.walletPrivateKeyEncrypted,
+    walletClient,
+  ]);
 
   const login = useCallback(
     (credentials: EmailAuthCredentials) =>
@@ -558,6 +741,7 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
       user: undefined,
       token: undefined,
       walletAddress: undefined,
+      walletPrivateKeyEncrypted: undefined,
       error: undefined,
     });
   }, []);
@@ -583,6 +767,7 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
       token: state.token,
       error: state.error,
       walletAddress: state.walletAddress,
+      walletPrivateKeyEncrypted: state.walletPrivateKeyEncrypted,
       walletClient,
       login,
       signup,
