@@ -1,8 +1,9 @@
 import { StabilityFeed } from "@/components/token-stability/StabilityFeed";
+import { AirdropFeed } from "@/components/token-airdrop/AirdropFeed";
 
 const HomePage = () => {
   return (
-    <main className="container py-12">
+    <main className="py-12">
       {/* <div className="mx-auto max-w-4xl text-center">
         <span className="text-sm font-medium uppercase tracking-[0.3em] text-primary">
           AlphaBuilder Insights
@@ -16,8 +17,9 @@ const HomePage = () => {
         </p>
       </div> */}
 
-      <div className="mt-10">
+      <div className="space-y-12">
         <StabilityFeed />
+        <AirdropFeed />
       </div>
     </main>
   );

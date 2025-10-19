@@ -25,6 +25,13 @@ export default defineConfig({
       '/api/data': {
         target: 'https://alpha123.uk',
         changeOrigin: true,
+        headers: {
+          Origin: 'https://alpha123.uk',
+          Referer: 'https://alpha123.uk/zh/',
+          ...(process.env.ALPHA_BUILDER_AIRDROP_COOKIE
+            ? { Cookie: process.env.ALPHA_BUILDER_AIRDROP_COOKIE }
+            : {}),
+        },
       },
     },
   },
