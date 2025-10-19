@@ -31,7 +31,7 @@ type AuthSession = {
   walletAddress?: string;
 };
 
-type StackupWalletInstance = {
+type ZeroDevWalletInstance = {
   address: string;
   accountApi: SimpleAccountAPI;
   owner: Wallet;
@@ -54,7 +54,7 @@ type AuthContextValue = {
   token?: string;
   error?: string;
   walletAddress?: string;
-  walletClient?: StackupWalletInstance;
+  walletClient?: ZeroDevWalletInstance;
   login: (credentials: EmailAuthCredentials) => Promise<void>;
   signup: (credentials: EmailAuthCredentials) => Promise<void>;
   logout: () => void;
@@ -72,14 +72,15 @@ const AUTH_LOGIN_PATH =
 const AUTH_SIGNUP_PATH =
   import.meta.env.VITE_AUTH_SIGNUP_PATH?.trim() || "/auth/signup";
 
-const STACKUP_RPC_URL = import.meta.env.VITE_STACKUP_RPC_URL ?? "";
-const STACKUP_ENTRY_POINT =
-  import.meta.env.VITE_STACKUP_ENTRY_POINT?.trim() || DEFAULT_ENTRY_POINT;
-const STACKUP_FACTORY_ADDRESS =
-  import.meta.env.VITE_STACKUP_FACTORY_ADDRESS?.trim() ||
+const ZERODEV_BUNDLER_URL =
+  import.meta.env.VITE_ZERODEV_BUNDLER_URL?.trim() ?? "";
+const ZERODEV_ENTRY_POINT =
+  import.meta.env.VITE_ZERODEV_ENTRY_POINT?.trim() || DEFAULT_ENTRY_POINT;
+const ZERODEV_FACTORY_ADDRESS =
+  import.meta.env.VITE_ZERODEV_FACTORY_ADDRESS?.trim() ||
   DEFAULT_SIMPLE_ACCOUNT_FACTORY;
-const STACKUP_CHAIN_ID = import.meta.env.VITE_STACKUP_CHAIN_ID
-  ? Number(import.meta.env.VITE_STACKUP_CHAIN_ID)
+const ZERODEV_CHAIN_ID = import.meta.env.VITE_ZERODEV_CHAIN_ID
+  ? Number.parseInt(import.meta.env.VITE_ZERODEV_CHAIN_ID, 10)
   : undefined;
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
@@ -258,15 +259,17 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
   });
 
   const [initialised, setInitialised] = useState(false);
-  const [walletClient, setWalletClient] = useState<StackupWalletInstance>();
-  const walletPromises = useRef<Map<string, Promise<StackupWalletInstance>>>(
+  const [walletClient, setWalletClient] = useState<ZeroDevWalletInstance>();
+  const walletPromises = useRef<Map<string, Promise<ZeroDevWalletInstance>>>(
     new Map()
   );
 
   const ensureWallet = useCallback(
-    async (email: string): Promise<StackupWalletInstance> => {
-      if (!STACKUP_RPC_URL) {
-        throw new Error("Missing VITE_STACKUP_RPC_URL for AA wallet provisioning.");
+    async (email: string): Promise<ZeroDevWalletInstance> => {
+      if (!ZERODEV_BUNDLER_URL) {
+        throw new Error(
+          "Missing VITE_ZERODEV_BUNDLER_URL for AA wallet provisioning."
+        );
       }
       if (!email) {
         throw new Error("Email is required to initialize the AA wallet.");
@@ -278,15 +281,15 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
         walletPromise = (async () => {
           const privateKey = getOrCreateWalletKey(normalized);
           const provider = new providers.JsonRpcProvider(
-            STACKUP_RPC_URL,
-            STACKUP_CHAIN_ID
+            ZERODEV_BUNDLER_URL,
+            ZERODEV_CHAIN_ID
           );
           const owner = new Wallet(privateKey, provider);
           const accountApi = new SimpleAccountAPI({
             provider,
-            entryPointAddress: STACKUP_ENTRY_POINT,
+            entryPointAddress: ZERODEV_ENTRY_POINT,
             owner,
-            factoryAddress: STACKUP_FACTORY_ADDRESS,
+            factoryAddress: ZERODEV_FACTORY_ADDRESS,
           });
 
           await accountApi.init();
@@ -331,7 +334,7 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
             setWalletClient(instance);
           })
           .catch((error) => {
-            console.error("Failed to restore Stackup wallet", error);
+            console.error("Failed to restore ZeroDev wallet", error);
           });
       }
     }
@@ -410,7 +413,7 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
         if (cancelled) {
           return;
         }
-        console.error("Failed to initialize Stackup wallet", error);
+        console.error("Failed to initialize ZeroDev wallet", error);
         setState((prev) => ({
           ...prev,
           status: "error",
