@@ -278,7 +278,7 @@ export function AirdropHistoryTable({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground">
-      <div className="border-b border-border/70 bg-gradient-to-r from-secondary/10 via-secondary/5 to-transparent px-6 py-5">
+      <div className="border-b border-border/70 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent px-6 py-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1.5">
             <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">{title}</h2>

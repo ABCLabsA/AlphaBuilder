@@ -196,7 +196,7 @@ export function AirdropCards({
               {SKELETON_ITEMS.map((_, index) => (
                 <div
                   key={index}
-                  className="animate-pulse rounded-2xl border border-border/60 bg-muted/40 p-6"
+                  className="animate-pulse rounded-2xl border border-border bg-muted/40 p-6"
                 >
                   <div className="mb-6 h-4 w-32 rounded bg-muted/80" />
                   <div className="mb-3 h-4 w-48 rounded bg-muted/70" />
@@ -230,7 +230,7 @@ export function AirdropCards({
                 return (
                   <article
                     key={`${airdrop.token}-${airdrop.system_timestamp ?? airdrop.updated_timestamp ?? airdrop.date}`}
-                    className="flex h-full flex-col rounded-2xl border border-border/60 bg-background/80 p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                    className="flex h-full flex-col rounded-2xl border border-border bg-background/80 p-6 transition"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
@@ -300,7 +300,7 @@ export function AirdropCards({
                       {airdrop.contract_address ? (
                         <div className="rounded-xl border border-border/60 bg-muted/30 p-3">
                           <div className="flex items-start gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-background text-muted-foreground/90 shadow-sm">
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-background text-muted-foreground/90">
                               <Hash className="h-4 w-4" />
                             </div>
                             <div className="flex flex-1 flex-col gap-2">
