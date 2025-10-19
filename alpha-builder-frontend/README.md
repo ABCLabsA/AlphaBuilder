@@ -15,7 +15,7 @@ React + Vite dashboard scaffold for account onboarding experiments.
 Copy `.env.example` to `.env` and point to the backend:
 
 ```
-VITE_API_BASE_URL=http://localhost:4000
+VITE_API_BASE_URL=http://localhost:3000
 VITE_AUTH_LOGIN_PATH=/auth/login
 VITE_AUTH_SIGNUP_PATH=/auth/signup
 VITE_ZERODEV_RPC_URL=https://rpc.zerodev.app/api/v3/<project-uuid>/chain/223
