@@ -55,6 +55,13 @@ interface NavbarProps {
   };
 }
 
+const shortenAddress = (address: string) => {
+  if (address.length <= 12) {
+    return address;
+  }
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
+
 const Navbar = ({
   logo = {
     url: "/",
@@ -139,7 +146,7 @@ const Navbar = ({
     signup: { title: "Sign up", url: "/signup" },
   },
 }: NavbarProps) => {
-  const { user, status, isLoading, logout } = useEmailAuth();
+  const { user, status, isLoading, logout, walletAddress } = useEmailAuth();
   const isAuthenticated = status === "authenticated" && !!user;
   const loginLabel = isLoading ? (
     <>
@@ -158,16 +165,24 @@ const Navbar = ({
     );
 
     if (isAuthenticated && user) {
+      const walletLabel = walletAddress
+        ? shortenAddress(walletAddress)
+        : "Provisioning wallet...";
       return (
         <div className={containerClass}>
-          <span
+          <div
             className={cn(
               "rounded-md border border-border bg-muted/60 px-3 py-2 text-sm",
-              layout === "column" ? "w-full text-center" : ""
+              layout === "column"
+                ? "w-full text-left"
+                : "min-w-[12rem] text-left"
             )}
           >
-            {user.email}
-          </span>
+            <div className="font-medium">{user.email}</div>
+            <div className="font-mono text-xs text-muted-foreground">
+              {walletLabel}
+            </div>
+          </div>
           <Button
             variant="outline"
             onClick={logout}
