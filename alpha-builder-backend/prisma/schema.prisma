@@ -12,6 +12,8 @@ model User {
   email        String   @unique
   passwordHash String
   name         String?
+  walletAddress String?
+  walletPrivateKeyEncrypted String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
