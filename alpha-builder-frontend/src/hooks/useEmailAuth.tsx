@@ -156,26 +156,74 @@ const getStoredEncryptedWalletKey = (
   return map[normalizedEmail];
 };
 
+const isHexPrivateKey = (value: string): value is Hex =>
+  /^0x[0-9a-fA-F]{64}$/.test(value.trim());
+
+const hexToBytes = (hexValue: Hex): Uint8Array => {
+  const normalized = hexValue.startsWith("0x")
+    ? hexValue.slice(2)
+    : hexValue;
+  if (normalized.length % 2 !== 0) {
+    throw new Error("Hex string has invalid length.");
+  }
+  const bytes = new Uint8Array(normalized.length / 2);
+  for (let index = 0; index < bytes.length; index += 1) {
+    const slice = normalized.slice(index * 2, index * 2 + 2);
+    bytes[index] = Number.parseInt(slice, 16);
+  }
+  return bytes;
+};
+
+const bytesToHex = (bytes: Uint8Array): Hex =>
+  `0x${Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")}` as Hex;
+
+const bytesToBase64 = (bytes: Uint8Array): string => {
+  if (typeof globalThis.btoa === "function") {
+    let binary = "";
+    for (let index = 0; index < bytes.length; index += 1) {
+      binary += String.fromCharCode(bytes[index] ?? 0);
+    }
+    return globalThis.btoa(binary);
+  }
+  throw new Error("Base64 encoding is not supported in this environment.");
+};
+
+const base64ToBytes = (value: string): Uint8Array => {
+  if (typeof globalThis.atob === "function") {
+    const binary = globalThis.atob(value);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    return bytes;
+  }
+  throw new Error("Base64 decoding is not supported in this environment.");
+};
+
 const encodePrivateKey = (privateKey: Hex): string => {
   try {
-    if (typeof window !== "undefined" && typeof window.btoa === "function") {
-      return window.btoa(privateKey);
-    }
+    return bytesToBase64(hexToBytes(privateKey));
   } catch {
     return privateKey;
   }
-  return privateKey;
 };
 
 const decodePrivateKey = (encrypted: string): Hex => {
+  const candidate = encrypted.trim();
+  if (isHexPrivateKey(candidate)) {
+    return candidate as Hex;
+  }
   try {
-    if (typeof window !== "undefined" && typeof window.atob === "function") {
-      return window.atob(encrypted) as Hex;
+    const decoded = bytesToHex(base64ToBytes(candidate));
+    if (isHexPrivateKey(decoded)) {
+      return decoded;
     }
   } catch {
-    return encrypted as Hex;
+    if (isHexPrivateKey(candidate)) {
+      return candidate as Hex;
+    }
   }
-  return encrypted as Hex;
+  throw new Error("Unable to decode wallet private key.");
 };
 
 const extractChainIdFromUrl = (rpcUrl: string): number | undefined => {
