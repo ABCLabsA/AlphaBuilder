@@ -17,10 +17,14 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': {
+      '/api/stability': {
         target: 'https://alpha123.uk',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+      '/api/data': {
+        target: 'https://alpha123.uk',
+        changeOrigin: true,
       },
     },
   },

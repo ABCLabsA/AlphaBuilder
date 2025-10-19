@@ -49,6 +49,7 @@ export function useAirdropFeed(options: UseAirdropFeedOptions = {}) {
       const source = Array.isArray(json.airdrops) ? json.airdrops : [];
 
       const airdrops = [...source].sort((a, b) => {
+
         const timeA =
           a?.updated_timestamp ?? a?.system_timestamp ?? a?.created_timestamp ?? 0;
         const timeB =
