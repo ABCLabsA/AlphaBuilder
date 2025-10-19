@@ -19,11 +19,11 @@ export function StabilityTable({ items, title = '币种稳定性列表' }: Stabi
           <table className="w-full text-sm text-gray-700 border-collapse">
             <thead>
               <tr className="bg-gray-100 border-b border-gray-200">
-                <th className="p-3 text-left font-semibold uppercase tracking-wide">币种</th>
+                <th className="p-3 text-left font-semibold uppercase tracking-wide">币种（Coin）</th>
                 <th className="p-3 text-right font-semibold uppercase tracking-wide">价格 (USDT)</th>
                 <th className="p-3 text-right font-semibold uppercase tracking-wide">价差基点</th>
                 <th className="p-3 text-right font-semibold uppercase tracking-wide">4倍天数</th>
-                <th className="p-3 text-center font-semibold uppercase tracking-wide">稳定性</th>
+                <th className="p-3 text-center font-semibold uppercase tracking-wide">稳定性（Stablity）</th>
               </tr>
             </thead>
             <tbody>

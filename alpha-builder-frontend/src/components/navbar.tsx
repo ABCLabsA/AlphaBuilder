@@ -1,5 +1,7 @@
 import { Book, Menu, Sunset, Trees, Zap } from "lucide-react";
+import { Link, NavLink } from "react-router-dom";
 import alphaBuilderLogo from "@/assets/alphabuilder-logo.svg";
+import { cn } from "@/lib/utils";
 
 import {
   Accordion,
@@ -54,86 +56,86 @@ interface NavbarProps {
 
 const Navbar = ({
   logo = {
-    url: "https://github.com/ABCLabsA",
+    url: "/",
     src: alphaBuilderLogo,
     alt: "logo",
     title: "AlphaBuilder",
   },
   menu = [
-    { title: "Home", url: "#" },
+    { title: "Home", url: "/" },
     {
       title: "Products",
-      url: "#",
+      url: "/products",
       items: [
         {
           title: "Blog",
           description: "The latest industry news, updates, and info",
           icon: <Book className="size-5 shrink-0" />,
-          url: "#",
+          url: "/products/blog",
         },
         {
           title: "Company",
           description: "Our mission is to innovate and empower the world",
           icon: <Trees className="size-5 shrink-0" />,
-          url: "#",
+          url: "/products/company",
         },
         {
           title: "Careers",
           description: "Browse job listing and discover our workspace",
           icon: <Sunset className="size-5 shrink-0" />,
-          url: "#",
+          url: "/products/careers",
         },
         {
           title: "Support",
           description:
             "Get in touch with our support team or visit our community forums",
           icon: <Zap className="size-5 shrink-0" />,
-          url: "#",
+          url: "/products/support",
         },
       ],
     },
     {
       title: "Resources",
-      url: "#",
+      url: "/resources",
       items: [
         {
           title: "Help Center",
           description: "Get all the answers you need right here",
           icon: <Zap className="size-5 shrink-0" />,
-          url: "#",
+          url: "/resources/help-center",
         },
         {
           title: "Contact Us",
           description: "We are here to help you with any questions you have",
           icon: <Sunset className="size-5 shrink-0" />,
-          url: "#",
+          url: "/resources/contact",
         },
         {
           title: "Status",
           description: "Check the current status of our services and APIs",
           icon: <Trees className="size-5 shrink-0" />,
-          url: "#",
+          url: "/resources/status",
         },
         {
           title: "Terms of Service",
           description: "Our terms and conditions for using our services",
           icon: <Book className="size-5 shrink-0" />,
-          url: "#",
+          url: "/resources/terms",
         },
       ],
     },
     {
       title: "Pricing",
-      url: "#",
+      url: "/pricing",
     },
     {
       title: "Blog",
-      url: "#",
+      url: "/blog",
     },
   ],
   auth = {
-    login: { title: "Login", url: "#" },
-    signup: { title: "Sign up", url: "#" },
+    login: { title: "Login", url: "/login" },
+    signup: { title: "Sign up", url: "/signup" },
   },
 }: NavbarProps) => {
   return (
@@ -143,7 +145,7 @@ const Navbar = ({
         <nav className="hidden justify-between lg:flex">
           <div className="flex items-center gap-6">
             {/* Logo */}
-            <a href={logo.url} className="flex items-center gap-2">
+            <Link to={logo.url} className="flex items-center gap-2">
               <img
                 src={logo.src}
                 className="max-h-8 dark:invert"
@@ -152,7 +154,7 @@ const Navbar = ({
               <span className="text-lg font-semibold tracking-tighter">
                 {logo.title}
               </span>
-            </a>
+            </Link>
             <div className="flex items-center">
               <NavigationMenu>
                 <NavigationMenuList>
@@ -163,10 +165,10 @@ const Navbar = ({
           </div>
           <div className="flex gap-2">
             <Button asChild variant="outline" size="sm">
-              <a href={auth.login.url}>{auth.login.title}</a>
+              <Link to={auth.login.url}>{auth.login.title}</Link>
             </Button>
             <Button asChild size="sm">
-              <a href={auth.signup.url}>{auth.signup.title}</a>
+              <Link to={auth.signup.url}>{auth.signup.title}</Link>
             </Button>
           </div>
         </nav>
@@ -175,13 +177,13 @@ const Navbar = ({
         <div className="block lg:hidden">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <a href={logo.url} className="flex items-center gap-2">
+            <Link to={logo.url} className="flex items-center gap-2">
               <img
                 src={logo.src}
                 className="max-h-8 dark:invert"
                 alt={logo.alt}
               />
-            </a>
+            </Link>
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon">
@@ -191,13 +193,13 @@ const Navbar = ({
               <SheetContent className="overflow-y-auto">
                 <SheetHeader>
                   <SheetTitle>
-                    <a href={logo.url} className="flex items-center gap-2">
+                    <Link to={logo.url} className="flex items-center gap-2">
                       <img
                         src={logo.src}
                         className="max-h-8 dark:invert"
                         alt={logo.alt}
                       />
-                    </a>
+                    </Link>
                   </SheetTitle>
                 </SheetHeader>
                 <div className="flex flex-col gap-6 p-4">
@@ -211,10 +213,10 @@ const Navbar = ({
 
                   <div className="flex flex-col gap-3">
                     <Button asChild variant="outline">
-                      <a href={auth.login.url}>{auth.login.title}</a>
+                      <Link to={auth.login.url}>{auth.login.title}</Link>
                     </Button>
                     <Button asChild>
-                      <a href={auth.signup.url}>{auth.signup.title}</a>
+                      <Link to={auth.signup.url}>{auth.signup.title}</Link>
                     </Button>
                   </div>
                 </div>
@@ -245,11 +247,19 @@ const renderMenuItem = (item: MenuItem) => {
 
   return (
     <NavigationMenuItem key={item.title}>
-      <NavigationMenuLink
-        href={item.url}
-        className="bg-background hover:bg-muted hover:text-accent-foreground group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors"
-      >
-        {item.title}
+      <NavigationMenuLink asChild>
+        <NavLink
+          to={item.url}
+          className={({ isActive }) =>
+            cn(
+              "group inline-flex h-10 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors",
+              "bg-background hover:bg-muted hover:text-accent-foreground",
+              isActive && "bg-muted text-accent-foreground"
+            )
+          }
+        >
+          {item.title}
+        </NavLink>
       </NavigationMenuLink>
     </NavigationMenuItem>
   );
@@ -272,17 +282,32 @@ const renderMobileMenuItem = (item: MenuItem) => {
   }
 
   return (
-    <a key={item.title} href={item.url} className="text-md font-semibold">
+    <NavLink
+      key={item.title}
+      to={item.url}
+      className={({ isActive }) =>
+        cn(
+          "text-md font-semibold",
+          isActive ? "text-primary" : "text-foreground"
+        )
+      }
+    >
       {item.title}
-    </a>
+    </NavLink>
   );
 };
 
 const SubMenuLink = ({ item }: { item: MenuItem }) => {
   return (
-    <a
-      className="hover:bg-muted hover:text-accent-foreground flex min-w-80 select-none flex-row gap-4 rounded-md p-3 leading-none no-underline outline-none transition-colors"
-      href={item.url}
+    <NavLink
+      to={item.url}
+      className={({ isActive }) =>
+        cn(
+          "flex min-w-80 select-none flex-row gap-4 rounded-md p-3 leading-none no-underline outline-none transition-colors",
+          "hover:bg-muted hover:text-accent-foreground",
+          isActive && "bg-muted text-accent-foreground"
+        )
+      }
     >
       <div className="text-foreground">{item.icon}</div>
       <div>
@@ -293,7 +318,7 @@ const SubMenuLink = ({ item }: { item: MenuItem }) => {
           </p>
         )}
       </div>
-    </a>
+    </NavLink>
   );
 };
 

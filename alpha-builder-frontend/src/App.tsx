@@ -1,11 +1,11 @@
-import { Navbar } from './components/navbar';
-import { StabilityFeed } from './components/StabilityFeed';
+import { Outlet } from "react-router-dom";
+import { Navbar } from "./components/navbar";
 
 function App() {
   return (
     <>
       <Navbar />
-      <StabilityFeed />
+      <Outlet />
     </>
   );
 }
