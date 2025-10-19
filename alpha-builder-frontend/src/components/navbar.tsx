@@ -170,9 +170,11 @@ const Navbar = ({
         : "Provisioning wallet...";
       return (
         <div className={containerClass}>
-          <div
+          <Link
+            to="/my"
             className={cn(
-              "rounded-md border border-border bg-muted/60 px-3 py-2 text-sm",
+              "rounded-md border border-border bg-muted/60 px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "hover:bg-muted hover:border-ring/60",
               layout === "column"
                 ? "w-full text-left"
                 : "min-w-[12rem] text-left"
@@ -182,7 +184,7 @@ const Navbar = ({
             <div className="font-mono text-xs text-muted-foreground">
               {walletLabel}
             </div>
-          </div>
+          </Link>
           <Button
             variant="outline"
             onClick={logout}

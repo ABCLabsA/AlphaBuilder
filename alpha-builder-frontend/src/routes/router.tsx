@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import App from "@/App";
 import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
+import MyPage from "@/pages/MyPage";
 import PagePlaceholder from "@/pages/PagePlaceholder";
 import SignupPage from "@/pages/SignupPage";
 
@@ -122,6 +123,10 @@ const routes = [
       {
         path: "login",
         element: <LoginPage />,
+      },
+      {
+        path: "my",
+        element: <MyPage />,
       },
       {
         path: "signup",
