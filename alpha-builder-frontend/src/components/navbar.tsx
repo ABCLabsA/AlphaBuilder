@@ -233,7 +233,7 @@ const renderMenuItem = (item: MenuItem) => {
   if (item.items) {
     return (
       <NavigationMenuItem key={item.title}>
-        <NavigationMenuTrigger className="text-xl">
+        <NavigationMenuTrigger className="text-lg">
           {item.title}
         </NavigationMenuTrigger>
         <NavigationMenuContent className="bg-popover text-popover-foreground">
@@ -289,7 +289,7 @@ const renderMobileMenuItem = (item: MenuItem) => {
       to={item.url}
       className={({ isActive }) =>
         cn(
-          "text-xl font-semibold",
+          "text-lg font-semibold",
           isActive ? "text-primary" : "text-foreground"
         )
       }
@@ -313,7 +313,7 @@ const SubMenuLink = ({ item }: { item: MenuItem }) => {
     >
       <div className="text-foreground">{item.icon}</div>
       <div>
-        <div className="text-lg font-semibold">{item.title}</div>
+        <div className="text-base font-semibold">{item.title}</div>
         {item.description && (
           <p className="text-muted-foreground text-sm leading-snug">
             {item.description}
