@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { formatEther, type Hex } from "viem";
+import { formatEther } from "viem";
 import { Button } from "@/components/ui/button";
 import { useEmailAuth } from "@/hooks/useEmailAuth";
 
@@ -31,13 +31,7 @@ const MyPage = () => {
     setBalanceLoading(true);
     setBalanceError(null);
     try {
-      const kernelClient = walletClient.client as unknown as {
-        getBalance?: (params: { address: Hex }) => Promise<bigint>;
-      };
-      if (typeof kernelClient.getBalance !== "function") {
-        throw new Error("Wallet client does not support balance lookup.");
-      }
-      const currentBalance = await kernelClient.getBalance({
+      const currentBalance = await walletClient.publicClient.getBalance({
         address: walletClient.address,
       });
       setBalance(currentBalance);

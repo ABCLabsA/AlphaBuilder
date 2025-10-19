@@ -60,6 +60,7 @@ type ZeroDevWalletInstance = {
   signer: PrivateKeyAccount;
   privateKey: Hex;
   chain: Chain;
+  publicClient: ReturnType<typeof createPublicClient>;
 };
 
 type AuthState = {
@@ -569,6 +570,7 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
             signer,
             privateKey: decryptedPrivateKey as Hex,
             chain,
+            publicClient,
           };
         })();
         walletPromises.current.set(promiseKey, walletPromise);
