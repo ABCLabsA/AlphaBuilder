@@ -110,15 +110,33 @@ export function AirdropHistoryTable({
     if (loading) {
       return (
         <tbody>
-          {Array.from({ length: 5 }).map((_, rowIdx) => (
-            <tr key={rowIdx} className="border-b border-border/60">
-              {HEADERS.map((header) => (
-                <td key={header.key} className="px-4 py-3">
-                  <div className="h-4 w-20 animate-pulse rounded bg-muted/70" />
-                </td>
-              ))}
-            </tr>
-          ))}
+          {Array.from({ length: 5 }).map((_, rowIdx) => {
+            const isLastRow = rowIdx === 4;
+            return (
+              <tr
+                key={rowIdx}
+                className={cn(
+                  "border-b border-border/70",
+                  rowIdx % 2 === 0 ? "bg-background" : "bg-muted/30"
+                )}
+              >
+                {HEADERS.map((header, colIdx) => (
+                  <td
+                    key={header.key}
+                    className={cn(
+                      "px-4 py-4",
+                      rowIdx === 0 && "pt-4",
+                      isLastRow && "pb-4",
+                      colIdx === 0 && "pl-6",
+                      colIdx === HEADERS.length - 1 && "pr-6"
+                    )}
+                  >
+                    <div className="h-4 w-20 animate-pulse rounded bg-muted/80" />
+                  </td>
+                ))}
+              </tr>
+            );
+          })}
         </tbody>
       );
     }
@@ -127,10 +145,12 @@ export function AirdropHistoryTable({
       return (
         <tbody>
           <tr>
-            <td colSpan={HEADERS.length} className="px-4 py-10 text-center text-sm text-destructive">
-              <div className="space-y-3">
-                <p>历史数据加载失败：{error.message}</p>
-                {onRetry ? (
+            <td colSpan={HEADERS.length} className="px-6 py-14 text-center">
+              <div className="flex flex-col items-center gap-4">
+                <p className="text-sm text-destructive">
+                  历史数据加载失败：{error.message}
+                </p>
+                {onRetry && (
                   <button
                     type="button"
                     onClick={onRetry}
@@ -138,7 +158,7 @@ export function AirdropHistoryTable({
                   >
                     重试
                   </button>
-                ) : null}
+                )}
               </div>
             </td>
           </tr>
@@ -150,8 +170,10 @@ export function AirdropHistoryTable({
       return (
         <tbody>
           <tr>
-            <td colSpan={HEADERS.length} className="px-4 py-10 text-center text-sm text-muted-foreground">
-              暂无历史记录
+            <td colSpan={HEADERS.length} className="px-6 py-14 text-center">
+              <p className="text-sm text-muted-foreground">
+                暂无历史记录
+              </p>
             </td>
           </tr>
         </tbody>
@@ -160,63 +182,110 @@ export function AirdropHistoryTable({
 
     return (
       <tbody>
-        {items.map((item) => (
-          <tr
-            key={`${item.token}-${item.system_timestamp ?? item.date}`}
-            className="border-b border-border/30 bg-background/80 transition hover:-translate-y-[1px] hover:bg-muted/40"
-          >
-            <td className="px-5 py-4 text-sm font-semibold tracking-wide text-foreground">
-              <span className="inline-flex min-w-[3.5rem] items-center gap-2">
-                <span className="font-medium text-muted-foreground/70">#</span>
-                {item.token}
-              </span>
-            </td>
-            <td className="px-5 py-4 text-sm text-foreground/80">{item.name ?? "-"}</td>
-            <td className="px-5 py-4 text-sm">{item.date ?? "-"}</td>
-            <td className="px-5 py-4 text-sm text-muted-foreground/80">{item.time ?? "-"}</td>
-            <td className="px-5 py-4 text-sm font-semibold text-primary">
-              {formatNumber(item.points)}
-            </td>
-            <td className="px-5 py-4 text-sm text-foreground/80">
-              {formatNumber(item.amount)}
-            </td>
-            <td className="px-4 py-3">
-              {(() => {
-                const statusKey = normalizeStatus(item.status);
-                const meta = STATUS_STYLES[statusKey];
-                return (
-                  <span
-                    className={cn(
-                      "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold capitalize ring-1 ring-inset",
-                      meta.badge
-                    )}
-                  >
-                    <span className={cn("h-2 w-2 rounded-full", meta.dot)} />
-                    {meta.text}
-                  </span>
-                );
-              })()}
-            </td>
-            <td className="px-4 py-3">{item.phase ?? "-"}</td>
-            <td className="px-4 py-3">{formatNumber(item.market_cap)}</td>
-            <td className="px-4 py-3">{formatNumber(item.fdv)}</td>
-          </tr>
-        ))}
+        {items.map((item, index) => {
+          const isLastRow = index === items.length - 1;
+          return (
+            <tr
+              key={`${item.token}-${item.system_timestamp ?? item.date}`}
+              className={cn(
+                "border-b border-border/80 transition-colors",
+                index % 2 === 0 ? "bg-background" : "bg-muted/30",
+                "hover:bg-muted/60"
+              )}
+            >
+              <td className={cn(
+                "px-4 py-4 text-sm font-semibold tracking-wide text-foreground text-center",
+                index === 0 && "pt-4",
+                isLastRow && "pb-4",
+                "pl-6"
+              )}>
+                <span className="inline-flex min-w-[3.5rem] items-center gap-2">
+                  <span className="font-medium text-muted-foreground/70">#</span>
+                  {item.token}
+                </span>
+              </td>
+              <td className={cn(
+                "px-4 py-4 text-sm text-foreground/80 text-center",
+                index === 0 && "pt-4",
+                isLastRow && "pb-4"
+              )}>{item.name ?? "-"}</td>
+              <td className={cn(
+                "px-4 py-4 text-sm text-center",
+                index === 0 && "pt-4",
+                isLastRow && "pb-4"
+              )}>{item.date ?? "-"}</td>
+              <td className={cn(
+                "px-4 py-4 text-sm text-muted-foreground/80 text-center",
+                index === 0 && "pt-4",
+                isLastRow && "pb-4"
+              )}>{item.time ?? "-"}</td>
+              <td className={cn(
+                "px-4 py-4 text-sm font-semibold text-primary text-center",
+                index === 0 && "pt-4",
+                isLastRow && "pb-4"
+              )}>
+                {formatNumber(item.points)}
+              </td>
+              <td className={cn(
+                "px-4 py-4 text-sm text-foreground/80 text-center",
+                index === 0 && "pt-4",
+                isLastRow && "pb-4"
+              )}>
+                {formatNumber(item.amount)}
+              </td>
+              <td className={cn(
+                "px-4 py-3 text-center",
+                index === 0 && "pt-4",
+                isLastRow && "pb-4"
+              )}>
+                {(() => {
+                  const statusKey = normalizeStatus(item.status);
+                  const meta = STATUS_STYLES[statusKey];
+                  return (
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold capitalize ring-1 ring-inset",
+                        meta.badge
+                      )}
+                    >
+                      <span className={cn("h-2 w-2 rounded-full", meta.dot)} />
+                      {meta.text}
+                    </span>
+                  );
+                })()}
+              </td>
+              <td className={cn(
+                "px-4 py-3 text-center",
+                index === 0 && "pt-4",
+                isLastRow && "pb-4"
+              )}>{item.phase ?? "-"}</td>
+              <td className={cn(
+                "px-4 py-3 text-center",
+                index === 0 && "pt-4",
+                isLastRow && "pb-4"
+              )}>{formatNumber(item.market_cap)}</td>
+              <td className={cn(
+                "px-4 py-3 pr-6 text-center",
+                index === 0 && "pt-4",
+                isLastRow && "pb-4"
+              )}>{formatNumber(item.fdv)}</td>
+            </tr>
+          );
+        })}
       </tbody>
     );
   }, [items, loading, error, onRetry, empty]);
 
   return (
-    <div className="mx-auto max-w-7xl overflow-x-auto px-4">
-      <section className="min-w-max rounded-2xl border border-border bg-card">
-        <header className="border-b border-border/60 bg-gradient-to-r from-secondary/15 via-secondary/5 to-transparent px-6 py-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold tracking-tight text-foreground">{title}</h2>
-              <p className="text-sm text-muted-foreground">
-                回顾历史空投表现，快速筛选积分、阶段与市值数据。
-              </p>
-            </div>
+    <div className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground">
+      <div className="border-b border-border/70 bg-gradient-to-r from-secondary/10 via-secondary/5 to-transparent px-6 py-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-1.5">
+            <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">{title}</h2>
+            <p className="text-sm text-muted-foreground">
+              回顾历史空投表现，快速筛选积分、阶段与市值数据。
+            </p>
+          </div>
             <div className="flex flex-wrap gap-2 text-xs font-semibold text-muted-foreground">
               {(["ongoing", "announced", "completed"] as const).map((key) => {
                 const meta = STATUS_STYLES[key];
@@ -240,16 +309,21 @@ export function AirdropHistoryTable({
               </span>
             </div>
           </div>
-        </header>
-        <div>
-          <table className="min-w-full border-collapse text-sm">
-            <thead className="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
-              <tr>
-                {HEADERS.map((header) => (
+        </div>
+        <div className="overflow-x-auto">
+          <table className="min-w-full border-separate border-spacing-0 text-sm">
+            <thead className="bg-transparent">
+              <tr className="text-xs uppercase tracking-wide text-muted-foreground">
+                {HEADERS.map((header, index) => (
                   <th
                     key={header.key}
                     scope="col"
-                    className="px-5 py-3 text-left font-semibold text-muted-foreground/80"
+                    className={cn(
+                      "bg-transparent px-4 py-3 text-sm font-bold text-foreground tracking-wide uppercase",
+                      "text-center",
+                      index === 0 && "rounded-tl-2xl pl-6",
+                      index === HEADERS.length - 1 && "rounded-tr-2xl pr-6"
+                    )}
                   >
                     {header.label}
                   </th>
@@ -259,7 +333,6 @@ export function AirdropHistoryTable({
             {content}
           </table>
         </div>
-      </section>
-    </div>
+      </div>
   );
 }
