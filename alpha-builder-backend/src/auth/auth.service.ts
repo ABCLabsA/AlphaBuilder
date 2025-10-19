@@ -20,6 +20,8 @@ type AuthPayload = {
     createdAt: Date;
     updatedAt: Date;
   };
+  walletAddress?: string | null;
+  walletPrivateKeyEncrypted?: string | null;
 };
 
 @Injectable()
@@ -37,10 +39,14 @@ export class AuthService {
     }
 
     const passwordHash = await argon2.hash(dto.password);
+    const walletAddress = dto.walletAddress.trim();
+    const walletPrivateKeyEncrypted = dto.walletPrivateKeyEncrypted.trim();
     const createInput = {
       email,
       passwordHash,
       name: dto.name?.trim() || undefined,
+      walletAddress,
+      walletPrivateKeyEncrypted,
     };
 
     let created: User;
@@ -83,6 +89,8 @@ export class AuthService {
     return {
       token,
       user: this.sanitizeUser(user),
+      walletAddress: user.walletAddress,
+      walletPrivateKeyEncrypted: user.walletPrivateKeyEncrypted,
     };
   }
 

@@ -11,4 +11,12 @@ export class SignupDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  @IsString()
+  @MinLength(1)
+  walletAddress!: string;
+
+  @IsString()
+  @MinLength(1)
+  walletPrivateKeyEncrypted!: string;
 }
