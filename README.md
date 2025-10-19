@@ -28,16 +28,29 @@ The repository is split in three packages:
 2. **Configure environment**
 
    Copy `.env.example` files inside each package, fill in RPC URLs, factory/verifier addresses, JWT
-   secret, and (optionally) an operator private key for the backend.
+   secret, database URL, and (optionally) an operator private key for the backend.
 
-3. **Compile contracts**
+3. **Start PostgreSQL & run migrations**
+
+   ```bash
+   # from repo root
+   docker build -f Dockerfile.postgres -t alpha-builder-db .
+   docker run --name alpha-builder-db -p 5432:5432 alpha-builder-db
+
+   cd alpha-builder-backend
+   pnpm prisma:generate
+   pnpm prisma:migrate
+   cd ..
+   ```
+
+4. **Compile contracts**
 
    ```bash
    cd alpha-builder-ethereum
    pnpm hardhat compile
    ```
 
-4. **Run backend + frontend**
+5. **Run backend + frontend**
 
    ```bash
    # in alpha-builder-backend
@@ -73,5 +86,5 @@ The repository is split in three packages:
 
 - Integrate a production zk-email prover (e.g., `zkemail-kit`) and bundle proof generation in the
   frontend.
-- Swap the in-memory user store for a persistent adapter (Postgres, Dynamo).
+- Build automated sync jobs to reconcile Binance balances periodically.
 - Wire an ERC-4337 bundler or paymaster to automate user operation submission after onboarding.
