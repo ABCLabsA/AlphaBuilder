@@ -1,5 +1,5 @@
 import { useStabilityFeed } from "@/hooks/useStabilityFeed";
-import { StabilityTable } from "@/components/StabilityTable";
+import { StabilityTable } from "@/components/token-stability/StabilityTable";
 
 export interface StabilityFeedProps {
   url?: string;

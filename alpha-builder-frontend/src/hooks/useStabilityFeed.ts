@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { usePollingFetch } from "@/hooks/usePollingFetch";
 
 export interface StabilityItem {
   n: string; // name/symbol
@@ -20,47 +20,21 @@ interface UseStabilityFeedOptions {
 export function useStabilityFeed(options: UseStabilityFeedOptions = {}) {
   const { url = '/api/stability/stability_feed_v2.json', intervalMs = 7000 } = options;
 
-  const [data, setData] = useState<StabilityFeedData | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  const isMountedRef = useRef(true);
-  const controllerRef = useRef<AbortController | null>(null);
-
-  const fetchOnce = useCallback(async () => {
-    try {
-      controllerRef.current?.abort();
-      const controller = new AbortController();
-      controllerRef.current = controller;
-
-      const res = await fetch(url, { signal: controller.signal });
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      const json = (await res.json()) as StabilityFeedData;
-      if (!isMountedRef.current) return;
-      setData(json);
-      setError(null);
-    } catch (err) {
-      if (!isMountedRef.current) return;
-      if ((err as any)?.name === 'AbortError') return;
-      setError(err as Error);
-    } finally {
-      if (isMountedRef.current) setLoading(false);
-    }
-  }, [url]);
-
-  useEffect(() => {
-    isMountedRef.current = true;
-    fetchOnce();
-    const id = window.setInterval(fetchOnce, intervalMs);
-    return () => {
-      isMountedRef.current = false;
-      controllerRef.current?.abort();
-      window.clearInterval(id);
-    };
-  }, [fetchOnce, intervalMs]);
-
-  return { data, error, loading, reload: fetchOnce } as const;
+  return usePollingFetch<StabilityFeedData>({
+    url,
+    intervalMs,
+    parse: async (response) => {
+      const json = (await response.json()) as StabilityFeedData;
+      const order = { green: 0, yellow: 1, red: 2 };
+      const sortedItems = [...(json.items ?? [])].sort((a, b) => {
+        const colorA = a.st?.split(":")[0] || "";
+        const colorB = b.st?.split(":")[0] || "";
+        return (
+          (order[colorA as keyof typeof order] ?? 99) -
+          (order[colorB as keyof typeof order] ?? 99)
+        );
+      });
+      return { ...json, items: sortedItems };
+    },
+  });
 }
-

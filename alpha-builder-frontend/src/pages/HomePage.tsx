@@ -1,4 +1,4 @@
-import { StabilityFeed } from "@/components/StabilityFeed";
+import { StabilityFeed } from "@/components/token-stability/StabilityFeed";
 
 const HomePage = () => {
   return (
