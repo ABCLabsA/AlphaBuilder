@@ -1,5 +1,24 @@
-import { SimpleAccountAPI } from "@account-abstraction/sdk";
-import { providers, Wallet } from "ethers";
+import {
+  createKernelAccount,
+  createKernelAccountClient,
+  createZeroDevPaymasterClient,
+  type CreateKernelAccountReturnType,
+  type KernelAccountClient,
+} from "@zerodev/sdk";
+import { getEntryPoint, KERNEL_V3_1 } from "@zerodev/sdk/constants";
+import { signerToEcdsaValidator } from "@zerodev/ecdsa-validator";
+import {
+  createPublicClient,
+  defineChain,
+  http,
+  type Chain,
+  type Hex,
+} from "viem";
+import {
+  generatePrivateKey,
+  privateKeyToAccount,
+  type PrivateKeyAccount,
+} from "viem/accounts";
 import {
   createContext,
   useCallback,
@@ -31,12 +50,15 @@ type AuthSession = {
   walletAddress?: string;
 };
 
+type KernelAccountInstance = CreateKernelAccountReturnType<"0.7">;
+
 type ZeroDevWalletInstance = {
-  address: string;
-  accountApi: SimpleAccountAPI;
-  owner: Wallet;
-  provider: providers.JsonRpcProvider;
-  privateKey: string;
+  address: Hex;
+  account: KernelAccountInstance;
+  client: KernelAccountClient;
+  signer: PrivateKeyAccount;
+  privateKey: Hex;
+  chain: Chain;
 };
 
 type AuthState = {
@@ -63,8 +85,7 @@ type AuthContextValue = {
 
 const STORAGE_KEY = "emailAuthSession";
 const WALLET_KEYS_STORAGE = "emailAuthWalletKeys";
-const DEFAULT_ENTRY_POINT = "0x0576a174D229E3cFA37253523E645A78A0C91B57";
-const DEFAULT_SIMPLE_ACCOUNT_FACTORY = "0x9406Cc6185a346906296840746125a0E44976454";
+const DEFAULT_ENTRY_POINT_VERSION = "0.7";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "";
 const AUTH_LOGIN_PATH =
@@ -72,16 +93,12 @@ const AUTH_LOGIN_PATH =
 const AUTH_SIGNUP_PATH =
   import.meta.env.VITE_AUTH_SIGNUP_PATH?.trim() || "/auth/signup";
 
-const ZERODEV_BUNDLER_URL =
-  import.meta.env.VITE_ZERODEV_BUNDLER_URL?.trim() ?? "";
-const ZERODEV_ENTRY_POINT =
-  import.meta.env.VITE_ZERODEV_ENTRY_POINT?.trim() || DEFAULT_ENTRY_POINT;
-const ZERODEV_FACTORY_ADDRESS =
-  import.meta.env.VITE_ZERODEV_FACTORY_ADDRESS?.trim() ||
-  DEFAULT_SIMPLE_ACCOUNT_FACTORY;
+const ZERODEV_RPC_URL = import.meta.env.VITE_ZERODEV_RPC_URL?.trim() ?? "";
 const ZERODEV_CHAIN_ID = import.meta.env.VITE_ZERODEV_CHAIN_ID
   ? Number.parseInt(import.meta.env.VITE_ZERODEV_CHAIN_ID, 10)
   : undefined;
+const ZERODEV_ENTRY_POINT =
+  import.meta.env.VITE_ZERODEV_ENTRY_POINT?.trim() ?? "";
 
 const normalizeEmail = (email: string) => email.trim().toLowerCase();
 
@@ -109,18 +126,79 @@ const persistWalletKeyMap = (map: Record<string, string>) => {
   window.localStorage.setItem(WALLET_KEYS_STORAGE, JSON.stringify(map));
 };
 
-const getOrCreateWalletKey = (normalizedEmail: string): string => {
+const getOrCreateWalletKey = (normalizedEmail: string): Hex => {
   if (typeof window === "undefined") {
     throw new Error("Wallet initialization requires a browser environment.");
   }
   const map = loadWalletKeyMap();
   if (map[normalizedEmail]) {
-    return map[normalizedEmail];
+    return map[normalizedEmail] as Hex;
   }
-  const wallet = Wallet.createRandom();
-  map[normalizedEmail] = wallet.privateKey;
+  const privateKey = generatePrivateKey();
+  map[normalizedEmail] = privateKey;
   persistWalletKeyMap(map);
-  return wallet.privateKey;
+  return privateKey;
+};
+
+const extractChainIdFromUrl = (rpcUrl: string): number | undefined => {
+  try {
+    const parsed = new URL(rpcUrl);
+    const queryChainId = parsed.searchParams.get("chainId");
+    if (queryChainId) {
+      const candidate = Number.parseInt(queryChainId, 10);
+      if (!Number.isNaN(candidate)) {
+        return candidate;
+      }
+    }
+    const segments = parsed.pathname.split("/").filter(Boolean);
+    for (let index = segments.length - 1; index >= 0; index -= 1) {
+      const candidate = Number.parseInt(segments[index] ?? "", 10);
+      if (!Number.isNaN(candidate)) {
+        return candidate;
+      }
+    }
+  } catch {
+    // ignore parsing errors so that we can fall back to an explicit override
+  }
+  return undefined;
+};
+
+const createZeroDevChain = (rpcUrl: string, explicitChainId?: number): Chain => {
+  const resolvedChainId = explicitChainId ?? extractChainIdFromUrl(rpcUrl);
+  if (!resolvedChainId) {
+    throw new Error(
+      "Unable to determine the ZeroDev chain id. Ensure the RPC URL includes the chain segment or set VITE_ZERODEV_CHAIN_ID."
+    );
+  }
+  return defineChain({
+    id: resolvedChainId,
+    name: `ZeroDev Chain ${resolvedChainId}`,
+    network: `zerodev-${resolvedChainId}`,
+    nativeCurrency: {
+      name: "Ether",
+      symbol: "ETH",
+      decimals: 18,
+    },
+    rpcUrls: {
+      default: {
+        http: [rpcUrl],
+      },
+      public: {
+        http: [rpcUrl],
+      },
+    },
+  });
+};
+
+const resolveEntryPoint = () => {
+  const fallback = getEntryPoint(DEFAULT_ENTRY_POINT_VERSION);
+  if (ZERODEV_ENTRY_POINT) {
+    return {
+      ...fallback,
+      address: ZERODEV_ENTRY_POINT as Hex,
+    };
+  }
+  return fallback;
 };
 
 const EmailAuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -266,9 +344,9 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
 
   const ensureWallet = useCallback(
     async (email: string): Promise<ZeroDevWalletInstance> => {
-      if (!ZERODEV_BUNDLER_URL) {
+      if (!ZERODEV_RPC_URL) {
         throw new Error(
-          "Missing VITE_ZERODEV_BUNDLER_URL for AA wallet provisioning."
+          "Missing VITE_ZERODEV_RPC_URL for AA wallet provisioning."
         );
       }
       if (!email) {
@@ -280,27 +358,61 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
       if (!walletPromise) {
         walletPromise = (async () => {
           const privateKey = getOrCreateWalletKey(normalized);
-          const provider = new providers.JsonRpcProvider(
-            ZERODEV_BUNDLER_URL,
-            ZERODEV_CHAIN_ID
-          );
-          const owner = new Wallet(privateKey, provider);
-          const accountApi = new SimpleAccountAPI({
-            provider,
-            entryPointAddress: ZERODEV_ENTRY_POINT,
-            owner,
-            factoryAddress: ZERODEV_FACTORY_ADDRESS,
+          const chain = createZeroDevChain(ZERODEV_RPC_URL, ZERODEV_CHAIN_ID);
+          const entryPoint = resolveEntryPoint();
+          const publicClient = createPublicClient({
+            chain,
+            transport: http(ZERODEV_RPC_URL),
           });
 
-          await accountApi.init();
-          const address = await accountApi.getAccountAddress();
+          const signer = privateKeyToAccount(privateKey);
+          const validator = await signerToEcdsaValidator(publicClient, {
+            signer,
+            entryPoint,
+            kernelVersion: KERNEL_V3_1,
+          });
+
+          const account = await createKernelAccount(publicClient, {
+            entryPoint,
+            plugins: {
+              sudo: validator,
+            },
+            kernelVersion: KERNEL_V3_1,
+          });
+
+          const paymasterClient = createZeroDevPaymasterClient({
+            chain,
+            transport: http(ZERODEV_RPC_URL),
+          });
+
+          const client = createKernelAccountClient({
+            account,
+            chain,
+            bundlerTransport: http(ZERODEV_RPC_URL),
+            paymaster: {
+              async getPaymasterData(userOperation) {
+                return paymasterClient.sponsorUserOperation({
+                  userOperation,
+                });
+              },
+              async getPaymasterStubData(userOperation) {
+                return paymasterClient.sponsorUserOperation({
+                  userOperation,
+                  shouldConsume: false,
+                });
+              },
+            },
+          });
+
+          const address = client.account.address;
 
           return {
             address,
-            accountApi,
-            owner,
-            provider,
+            account,
+            client,
+            signer,
             privateKey,
+            chain,
           };
         })();
         walletPromises.current.set(normalized, walletPromise);

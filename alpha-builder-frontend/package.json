@@ -10,13 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@account-abstraction/contracts": "^0.6.0",
-    "@account-abstraction/sdk": "^0.6.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-navigation-menu": "^1.2.14",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/vite": "^4.1.14",
+    "@zerodev/ecdsa-validator": "^5.4.9",
+    "@zerodev/sdk": "^5.5.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.546.0",
@@ -25,7 +25,7 @@
     "react-router-dom": "^7.9.4",
     "tailwind-merge": "^3.3.1",
     "tailwindcss": "^4.1.14",
-    "ethers": "^5.7.2"
+    "viem": "^2.38.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",

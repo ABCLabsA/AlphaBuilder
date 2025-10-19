@@ -18,11 +18,9 @@ Copy `.env.example` to `.env` and point to the backend:
 VITE_API_BASE_URL=http://localhost:4000
 VITE_AUTH_LOGIN_PATH=/auth/login
 VITE_AUTH_SIGNUP_PATH=/auth/signup
-VITE_ZERODEV_BUNDLER_URL=https://rpc.zerodev.app/api/v2/bundler/<project-id>
-VITE_ZERODEV_PAYMASTER_URL=https://rpc.zerodev.app/api/v2/paymaster/<project-id>
-VITE_ZERODEV_ENTRY_POINT=0x0576a174D229E3cFA37253523E645A78A0C91B57
-VITE_ZERODEV_FACTORY_ADDRESS=0x9406Cc6185a346906296840746125a0E44976454
-VITE_ZERODEV_CHAIN_ID=84532
+VITE_ZERODEV_RPC_URL=https://rpc.zerodev.app/api/v3/<project-uuid>/chain/223
+# (Optional) set this only if your RPC URL does not embed the chain id:
+# VITE_ZERODEV_CHAIN_ID=223
 ```
 
 The auth provider posts credentials to the configured endpoints and expects a JSON
@@ -40,10 +38,10 @@ different field names.
 
 When authentication succeeds, the provider derives or retrieves a deterministic
 local private key per email and instantiates a `SimpleAccount` smart account via
-ZeroDev’s ERC-4337 toolchain. Point `VITE_ZERODEV_BUNDLER_URL` to a ZeroDev RPC
-(or any ERC-4337-enabled RPC), optionally override the entry point or factory
-addresses if you are using custom deployments, and set `VITE_ZERODEV_CHAIN_ID`
-to match your target network.
+ZeroDev’s 2024 RPC unifies bundler and paymaster routes. Point
+`VITE_ZERODEV_RPC_URL` to the project URL copied from the ZeroDev dashboard
+(it already includes the chain id segment, for example `/chain/223`). If your
+URL does not include the chain id, set `VITE_ZERODEV_CHAIN_ID` manually.
 
 ## Scripts
 
