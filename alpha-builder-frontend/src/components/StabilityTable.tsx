@@ -1,3 +1,4 @@
+import { Coins, DollarSign, Activity, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { StabilityItem } from "@/hooks/useStabilityFeed";
 import { cn } from "@/lib/utils";
@@ -68,11 +69,11 @@ function formatNumber(
 }
 
 const COLUMNS = [
-  { key: "pair", label: "币种 / 交易对", align: "text-left" },
-  { key: "price", label: "价格 (USDT)", align: "text-right" },
-  { key: "spread", label: "价差基点", align: "text-right" },
-  { key: "days", label: "4倍天数", align: "text-right" },
-  { key: "status", label: "稳定性", align: "text-right" },
+  { key: "pair", label: "币种 / 交易对", align: "text-center", icon: Coins },
+  { key: "price", label: "价格 (USDT)", align: "text-center", icon: DollarSign },
+  { key: "spread", label: "价差基点", align: "text-center", icon: Activity },
+  { key: "days", label: "4倍天数", align: "text-center", icon: Clock },
+  { key: "status", label: "稳定性", align: "text-center", icon: Shield },
 ] as const;
 
 export function StabilityTable({
@@ -133,20 +134,23 @@ export function StabilityTable({
 
       <div className="overflow-x-auto">
         <table className="min-w-full border-separate border-spacing-0 text-sm">
-          <thead>
+          <thead className="bg-transparent">
             <tr className="text-xs uppercase tracking-wide text-muted-foreground">
               {COLUMNS.map((column, index) => (
                 <th
                   key={column.key}
                   scope="col"
                   className={cn(
-                    "bg-muted/60 px-4 py-3 font-semibold text-xs",
-                    column.align,
+                    "bg-transparent px-4 py-3 text-sm font-bold text-foreground tracking-wide uppercase",
+                    "text-center",
                     index === 0 && "rounded-tl-2xl pl-6",
                     index === COLUMNS.length - 1 && "rounded-tr-2xl pr-6"
                   )}
                 >
-                  {column.label}
+                  <div className={cn("flex items-center gap-1.5 justify-center")}>
+                    {column.icon && <column.icon className="h-4 w-4 text-muted-foreground" />}
+                    <span>{column.label}</span>
+                  </div>
                 </th>
               ))}
             </tr>
@@ -253,13 +257,13 @@ export function StabilityTable({
                   >
                     <td
                       className={cn(
-                        "whitespace-nowrap px-4 py-4 text-sm font-medium text-foreground",
+                        "whitespace-nowrap px-4 py-4 text-sm font-medium text-foreground text-center",
                         index === 0 && "pt-4",
                         isLastRow && "pb-4",
                         "pl-6"
                       )}
                     >
-                      <div className="flex flex-col">
+                      <div className="flex flex-col items-center">
                         <span className="text-sm font-semibold tracking-tight sm:text-base">
                           {base}
                         </span>
@@ -272,7 +276,7 @@ export function StabilityTable({
                     </td>
                     <td
                       className={cn(
-                        "px-4 py-4 text-right font-mono text-sm",
+                        "px-4 py-4 font-mono text-sm text-center",
                         index === 0 && "pt-4",
                         isLastRow && "pb-4"
                       )}
@@ -286,7 +290,7 @@ export function StabilityTable({
                     </td>
                     <td
                       className={cn(
-                        "px-4 py-4 text-right font-mono text-sm text-muted-foreground",
+                        "px-4 py-4 font-mono text-sm text-muted-foreground text-center",
                         index === 0 && "pt-4",
                         isLastRow && "pb-4"
                       )}
@@ -298,7 +302,7 @@ export function StabilityTable({
                     </td>
                     <td
                       className={cn(
-                        "px-4 py-4 text-right font-mono text-sm text-muted-foreground",
+                        "px-4 py-4 font-mono text-sm text-muted-foreground text-center",
                         index === 0 && "pt-4",
                         isLastRow && "pb-4"
                       )}
@@ -312,7 +316,7 @@ export function StabilityTable({
                     </td>
                     <td
                       className={cn(
-                        "px-4 py-4 pr-6 text-right",
+                        "px-4 py-4 pr-6 text-center",
                         index === 0 && "pt-4",
                         isLastRow && "pb-4"
                       )}
