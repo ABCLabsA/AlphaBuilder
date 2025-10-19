@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { FormEvent } from "react";
+import type { FormEvent, KeyboardEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useEmailAuth } from "@/hooks/useEmailAuth";
@@ -36,6 +36,23 @@ const SignupPage = () => {
     updater(value);
   };
 
+  const handleEnterKey = (
+    event: KeyboardEvent<HTMLInputElement>,
+    nextFieldId?: string
+  ) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+    event.preventDefault();
+    if (!nextFieldId) {
+      return;
+    }
+    const nextElement = document.getElementById(nextFieldId);
+    if (nextElement instanceof HTMLElement) {
+      nextElement.focus();
+    }
+  };
+
   return (
     <div className="mx-auto max-w-md space-y-6 p-6">
       <header className="space-y-2 text-center">
@@ -56,6 +73,7 @@ const SignupPage = () => {
             autoComplete="name"
             value={name}
             onChange={(event) => handleChange(setName, event.target.value)}
+            onKeyDown={(event) => handleEnterKey(event, "signup-email")}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             placeholder="Jane Doe"
           />
@@ -74,6 +92,7 @@ const SignupPage = () => {
             onChange={(event) =>
               handleChange(setEmail, event.target.value.trim())
             }
+            onKeyDown={(event) => handleEnterKey(event, "signup-password")}
             className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             placeholder="you@example.com"
           />
