@@ -134,11 +134,12 @@ const resolveChain = (value?: string): Chain => {
   }
   const normalized = value.trim().toLowerCase();
   const directMatch = chains.find((chain) => {
+    const metadata = chain as unknown as { network?: string };
     const aliases = [
       chain.id.toString(),
       chain.name.toLowerCase(),
-      chain.network?.toLowerCase(),
-    ].filter(Boolean);
+      metadata.network?.toLowerCase(),
+    ].filter(Boolean) as string[];
     return aliases.includes(normalized);
   });
   if (directMatch) {
@@ -397,8 +398,11 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
     if (state.walletAddress && walletClient) {
       return;
     }
+    const currentUser = state.user;
+    const currentToken = state.token;
+    const normalizedEmail = normalizeEmail(currentUser.email);
     let cancelled = false;
-    ensureWallet(state.user.email)
+    ensureWallet(currentUser.email)
       .then(({ address, client }) => {
         if (cancelled) {
           return;
@@ -413,17 +417,17 @@ export const EmailAuthProvider = ({ children }: PropsWithChildren) => {
         const stored = loadStoredSession();
         if (
           stored &&
-          normalizeEmail(stored.user.email) === normalizeEmail(state.user.email)
+          normalizeEmail(stored.user.email) === normalizedEmail
         ) {
           persistSession({
             token: stored.token,
             user: stored.user,
             walletAddress: address,
           });
-        } else if (state.token) {
+        } else if (currentToken) {
           persistSession({
-            token: state.token,
-            user: state.user!,
+            token: currentToken,
+            user: currentUser,
             walletAddress: address,
           });
         }

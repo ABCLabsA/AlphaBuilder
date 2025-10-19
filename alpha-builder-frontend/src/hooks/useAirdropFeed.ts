@@ -21,6 +21,8 @@ export interface AirdropItem {
   contract_address?: string; // on-chain contract address if provided
   chain_id?: string; // chain identifier string (e.g. "56")
   utc?: string; // UTC time representation when supplied
+  market_cap?: number | string; // latest market cap snapshot if provided
+  fdv?: number | string; // fully diluted valuation snapshot if provided
 }
 
 export interface AirdropFeedData {
@@ -33,9 +35,13 @@ interface UseAirdropFeedOptions {
   enabled?: boolean;
 }
 
+const DEFAULT_AIRDROP_URL = import.meta.env.DEV
+  ? "/api/data?fresh=1"
+  : "https://alpha123.uk/api/data?fresh=1";
+
 export function useAirdropFeed(options: UseAirdropFeedOptions = {}) {
   const {
-    url = "/api/data?fresh=1",
+    url = DEFAULT_AIRDROP_URL,
     intervalMs = null,
     enabled = true,
   } = options;

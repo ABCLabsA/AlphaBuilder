@@ -33,6 +33,17 @@ export default defineConfig({
             : {}),
         },
       },
+      '/api/historydata': {
+        target: 'https://alpha123.uk',
+        changeOrigin: true,
+        headers: {
+          Origin: 'https://alpha123.uk',
+          Referer: 'https://alpha123.uk/zh/history.html',
+          ...(process.env.ALPHA_BUILDER_AIRDROP_COOKIE
+            ? { Cookie: process.env.ALPHA_BUILDER_AIRDROP_COOKIE }
+            : {}),
+        },
+      },
     },
   },
 })

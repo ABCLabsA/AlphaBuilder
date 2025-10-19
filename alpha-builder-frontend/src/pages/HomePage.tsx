@@ -1,5 +1,6 @@
 import { StabilityFeed } from "@/components/token-stability/StabilityFeed";
 import { AirdropFeed } from "@/components/token-airdrop/AirdropFeed";
+import { AirdropHistoryFeed } from "@/components/token-airdrop/AirdropHistoryFeed";
 
 const HomePage = () => {
   return (
@@ -20,6 +21,7 @@ const HomePage = () => {
       <div className="space-y-12">
         <StabilityFeed />
         <AirdropFeed />
+        <AirdropHistoryFeed />
       </div>
     </main>
   );
