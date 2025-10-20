@@ -1,4 +1,5 @@
-import { Book, Loader2, Menu, Sunset, Trees, Zap } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Book, Loader2, Menu, Sunset, Trees, Zap, User, LogOut, ChevronDown } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import alphaBuilderLogo from "@/assets/alphabuilder-logo.svg";
 import { cn } from "@/lib/utils";
@@ -168,32 +169,37 @@ const Navbar = ({
       const walletLabel = walletAddress
         ? shortenAddress(walletAddress)
         : "Provisioning wallet...";
-      return (
-        <div className={containerClass}>
-          <Link
-            to="/my"
-            className={cn(
-              "rounded-md border border-border bg-muted/60 px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              "hover:bg-muted hover:border-ring/60",
-              layout === "column"
-                ? "w-full text-left"
-                : "min-w-[12rem] text-left"
-            )}
-          >
-            <div className="font-medium">{user.email}</div>
-            <div className="font-mono text-xs text-muted-foreground">
-              {walletLabel}
-            </div>
-          </Link>
-          <Button
-            variant="outline"
-            onClick={logout}
-            className={layout === "column" ? "w-full" : undefined}
-          >
-            Log out
-          </Button>
-        </div>
-      );
+      
+      if (layout === "column") {
+        // Mobile layout - keep the original design
+        return (
+          <div className={containerClass}>
+            <Link
+              to="/my"
+              className={cn(
+                "rounded-md border border-border bg-muted/60 px-3 py-2 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                "hover:bg-muted hover:border-ring/60",
+                "w-full text-left"
+              )}
+            >
+              <div className="font-medium">{user.email}</div>
+              <div className="font-mono text-xs text-muted-foreground">
+                {walletLabel}
+              </div>
+            </Link>
+            <Button
+              variant="outline"
+              onClick={logout}
+              className="w-full"
+            >
+              Log out
+            </Button>
+          </div>
+        );
+      }
+
+      // Desktop layout - use dropdown
+      return <UserDropdown user={user} walletLabel={walletLabel} logout={logout} />;
     }
 
     return (
@@ -394,6 +400,81 @@ const SubMenuLink = ({ item }: { item: MenuItem }) => {
         )}
       </div>
     </NavLink>
+  );
+};
+
+const UserDropdown = ({ 
+  user, 
+  walletLabel, 
+  logout 
+}: { 
+  user: { email: string }; 
+  walletLabel: string; 
+  logout: () => void; 
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "flex items-center gap-2 rounded-md border border-border bg-muted/60 px-3 py-2 text-sm transition-colors",
+          "hover:bg-muted hover:border-ring/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "min-w-[12rem] text-left"
+        )}
+      >
+        <div className="flex-1">
+          <div className="font-medium">{user.email}</div>
+          <div className="font-mono text-xs text-muted-foreground">
+            {walletLabel}
+          </div>
+        </div>
+        <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-border bg-background shadow-lg z-50">
+          <div className="p-1">
+            <Link
+              to="/my"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+            >
+              <User className="h-4 w-4 text-muted-foreground" />
+              <span>Account</span>
+            </Link>
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                logout();
+              }}
+              className="flex items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors w-full text-left"
+            >
+              <LogOut className="h-4 w-4 text-muted-foreground" />
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
