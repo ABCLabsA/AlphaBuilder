@@ -1,5 +1,5 @@
 # 多阶段构建 - 构建阶段
-FROM node:20-alpine AS builder
+FROM registry.cn-hangzhou.aliyuncs.com/library/node:20-alpine AS builder
 
 # 设置工作目录
 WORKDIR /app
@@ -20,7 +20,7 @@ COPY . .
 RUN pnpm run build
 
 # 生产阶段 - 使用 nginx 提供静态文件服务
-FROM nginx:alpine AS production
+FROM registry.cn-hangzhou.aliyuncs.com/library/nginx:alpine AS production
 
 # 复制构建产物到 nginx 目录
 COPY --from=builder /app/dist /usr/share/nginx/html
