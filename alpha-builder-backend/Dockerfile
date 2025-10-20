@@ -30,7 +30,7 @@ RUN pnpm prisma generate
 RUN pnpm build
 
 # 调试：检查构建结果
-RUN ls -la dist/ && ls -la dist/src/main.js
+RUN ls -la dist/ && ls -la dist/main.js
 
 # 删除开发依赖，只保留生产依赖
 RUN pnpm prune --prod
