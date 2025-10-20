@@ -11,8 +11,8 @@ RUN npm install -g pnpm
 RUN pnpm config set registry https://registry.npmmirror.com
 
 # 创建非 root 用户
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nestjs -u 1001 -G nodejs
+RUN groupadd --gid 1001 nodejs && \
+    useradd --uid 1001 --gid nodejs --create-home --shell /bin/bash nestjs
 
 # 复制 package.json 和 pnpm-lock.yaml，并提前切换归属
 COPY --chown=nestjs:nodejs package.json pnpm-lock.yaml ./
