@@ -8,12 +8,36 @@
       "link": "https://app.galxe.com/quest/Piggycell/GCoqTt8cXQ"
     },
     {
+        "project": "Otherside",
+        "title": "Gamified, interoperable metaverse",
+        "reward": null,
+        "participants": null,
+        "image": "https://public.rootdata.com/images/b19/1668101042865_128x128.webp",
+        "link": "https://app.galxe.com/quest/mememarket/GCiTet8JSG"
+    },
+    {
+        "project": "Pudgy Penguins",
+        "title": "Penguin NFT Ecosystem",
+        "reward": null,
+        "participants": null,
+        "image": "https://public.rootdata.com/images/b6/1683639317995_128x128.webp",
+        "link": "https://public.rootdata.com/Projects/detail/Pudgy%20Penguins?k=Nzc4OQ%3D%3D"
+    },
+    {
         "project": "Dango",
         "title": "Dango Last Hurrah OAT",
         "reward": "OAT + 30",
         "participants": "26.19K",
         "image": "https://cdn.galxe.com/galaxy/dango/9ec5da18-7736-49c2-85bd-21b167a8f696.png",
         "link": "https://app.galxe.com/quest/dango"
+    },
+    {
+        "project": "Safe",
+        "title": "Multi-signature wallet provider",
+        "reward": "450 SEI + 30 GG",
+        "participants": "6.73K",
+        "image": "https://public.rootdata.com/images/b16/1666343054752_128x128.webp",
+        "link": "https://app.galxe.com/quest/SovaBTC/GCzyYt8bd6"
     },
     {
       "project": "MemeMarket",
@@ -46,14 +70,6 @@
       "participants": "1.02K",
       "image": "https://public.rootdata.com/images/b16/1666540448254_128x128.webp",
       "link": "https://app.galxe.com/quest/Theo/GCLPst8qWb"
-    },
-    {
-      "project": "SovaBTC",
-      "title": "Sova BTC L2 Genesis Quest - Beta Access Mint",
-      "reward": "450 SEI + 30 GG",
-      "participants": "6.73K",
-      "image": "https://public.rootdata.com/images/b16/1666343054752_128x128.webp",
-      "link": "https://app.galxe.com/quest/SovaBTC/GCzyYt8bd6"
     },
     {
       "project": "XT Exchange",
