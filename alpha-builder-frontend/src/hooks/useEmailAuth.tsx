@@ -397,6 +397,7 @@ const requestAuthSession = async (
       walletPrivateKeyEncrypted?: string;
       wallet?: {
         address?: string;
+        walletAddress?: string;
         privateKeyEncrypted?: string;
         walletPrivateKeyEncrypted?: string;
       };
@@ -405,6 +406,7 @@ const requestAuthSession = async (
     walletPrivateKeyEncrypted?: string;
     wallet?: {
       address?: string;
+      walletAddress?: string;
       privateKeyEncrypted?: string;
       walletPrivateKeyEncrypted?: string;
     };
