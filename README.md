@@ -134,9 +134,12 @@ pnpm build
 - **团队名**：ABCLabs
 - **成员与分工**：
   - Artist 负责产品设计和Deck撰写
-  - AQ 负责打通钱包与我的页面
-  - Aiden 负责整体架构和后端开发
-- **联系方式（Email/TG/X）**：待补充
+  - AQ 负责打通钱包与我的页面，前后端开发
+  - Aiden 负责整体架构和前后端开发
+- **联系方式（Email/TG/X）**：
+  - Artist: 
+  - AQ: qinhaojian404@gmail.com
+  - Aiden: csiyu100@gmail.com
 - **可演示时段（时区）**：待补充
 
 ## 三、快速自检清单 (Submission Checklist)
