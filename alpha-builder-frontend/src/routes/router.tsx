@@ -6,6 +6,7 @@ import MyPage from "@/pages/MyPage";
 import PagePlaceholder from "@/pages/PagePlaceholder";
 import QuestAskPage from "@/pages/QuestAskPage";
 import SignupPage from "@/pages/SignupPage";
+import FAQPage from "@/pages/FAQPage";
 
 const routes = [
   {
@@ -109,12 +110,7 @@ const routes = [
       },
       {
         path: "faq",
-        element: (
-          <PagePlaceholder
-            title="FAQ"
-            description="FAQ is a platform for creating and managing tasks."
-          />
-        ),
+        element: <FAQPage />,
       },
       {
         path: "login",
