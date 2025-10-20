@@ -30,9 +30,7 @@ interface UseAirdropHistoryOptions {
   enabled?: boolean;
 }
 
-const DEFAULT_HISTORY_URL = import.meta.env.DEV
-  ? "/api/historydata"
-  : "https://alpha123.uk/api/historydata";
+const DEFAULT_HISTORY_URL = "/api/historydata";
 
 export function useAirdropHistory(options: UseAirdropHistoryOptions = {}) {
   const {
