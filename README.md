@@ -137,7 +137,7 @@ pnpm build
   - AQ 负责打通钱包与我的页面，前后端开发
   - Aiden 负责整体架构和前后端开发
 - **联系方式（Email/TG/X）**：
-  - Artist: 
+  - Artist: nevermorezxt@gmail.com
   - AQ: qinhaojian404@gmail.com
   - Aiden: csiyu100@gmail.com
 - **可演示时段（时区）**：待补充
