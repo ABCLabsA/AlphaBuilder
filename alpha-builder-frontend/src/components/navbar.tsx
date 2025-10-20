@@ -134,8 +134,8 @@ const Navbar = ({
     //   ],
     // },
     {
-      title: "QuestTask",
-      url: "/questask",
+      title: "Quest",
+      url: "/quest",
     },
     {
       title: "FAQ",

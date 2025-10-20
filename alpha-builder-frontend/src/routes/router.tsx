@@ -105,7 +105,7 @@ const routes = [
         ),
       },
       {
-        path: "questask",
+        path: "quest",
         element: <QuestAskPage />,
       },
       {

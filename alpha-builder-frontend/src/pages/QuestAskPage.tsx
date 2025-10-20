@@ -84,10 +84,10 @@ const QuestAskPage = () => {
       <div className="mx-auto max-w-6xl space-y-8 p-6">
         <header className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight">
-            Quest Tasks
+            Quest
           </h1>
           <p className="text-muted-foreground">
-            Discover and participate in various quest tasks to earn rewards.
+            Discover and participate in various quests to earn rewards.
           </p>
         </header>
         <div className="text-center py-12">
@@ -101,10 +101,10 @@ const QuestAskPage = () => {
     <div className="mx-auto max-w-6xl space-y-10 p-6 lg:p-8">
       <header className="space-y-2">
         <h1 className="text-3xl font-semibold tracking-tight">
-          Quest Tasks
+          Quest
         </h1>
         <p className="text-muted-foreground">
-          Discover and participate in various quest tasks to earn rewards.
+          Discover and participate in various quests to earn rewards.
         </p>
       </header>
 

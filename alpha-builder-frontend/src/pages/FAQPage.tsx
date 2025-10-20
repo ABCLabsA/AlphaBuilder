@@ -27,7 +27,7 @@ const FAQPage = () => {
       questions: [
         {
           question: "How do I participate in quests?",
-          answer: "Simply browse our Quest Tasks page to discover available quests. Click 'Join Quest' on any quest card to be redirected to the official quest page where you can complete the required tasks to earn rewards."
+          answer: "Simply browse our Quest page to discover available quests. Click 'Join Quest' on any quest card to be redirected to the official quest page where you can complete the required quests to earn rewards."
         },
         {
           question: "Are the airdrop opportunities verified?",
