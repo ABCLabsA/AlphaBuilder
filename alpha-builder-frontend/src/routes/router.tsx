@@ -4,6 +4,7 @@ import HomePage from "@/pages/HomePage";
 import LoginPage from "@/pages/LoginPage";
 import MyPage from "@/pages/MyPage";
 import PagePlaceholder from "@/pages/PagePlaceholder";
+import QuestAskPage from "@/pages/QuestAskPage";
 import SignupPage from "@/pages/SignupPage";
 
 const routes = [
@@ -104,12 +105,7 @@ const routes = [
       },
       {
         path: "questask",
-        element: (
-          <PagePlaceholder
-            title="QuestTask"
-            description="QuestTask is a platform for creating and managing tasks."
-          />
-        ),
+        element: <QuestAskPage />,
       },
       {
         path: "faq",
