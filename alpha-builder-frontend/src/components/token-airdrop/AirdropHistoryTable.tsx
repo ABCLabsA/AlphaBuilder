@@ -1,5 +1,13 @@
 import { useMemo } from "react";
+import { RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
 import type { AirdropHistoryItem } from "@/hooks/useAirdropHistory";
+import { Button } from "@/components/ui/button";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionTrigger,
+  AccordionContent,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
 interface AirdropHistoryTableProps {
@@ -286,6 +294,19 @@ export function AirdropHistoryTable({
               回顾历史空投表现，快速筛选积分、阶段与市值数据。
             </p>
           </div>
+
+          <div className="flex items-center gap-4">
+            {onRetry && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onRetry}
+                disabled={loading}
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+              >
+                <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+              </Button>
+            )}
             <div className="flex flex-wrap gap-2 text-xs font-semibold text-muted-foreground">
               {(["ongoing", "announced", "completed"] as const).map((key) => {
                 const meta = STATUS_STYLES[key];
@@ -310,29 +331,44 @@ export function AirdropHistoryTable({
             </div>
           </div>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full border-separate border-spacing-0 text-sm">
-            <thead className="bg-transparent">
-              <tr className="text-xs uppercase tracking-wide text-muted-foreground">
-                {HEADERS.map((header, index) => (
-                  <th
-                    key={header.key}
-                    scope="col"
-                    className={cn(
-                      "bg-transparent px-4 py-3 text-sm font-bold text-foreground tracking-wide uppercase",
-                      "text-center",
-                      index === 0 && "rounded-tl-2xl pl-6",
-                      index === HEADERS.length - 1 && "rounded-tr-2xl pr-6"
-                    )}
-                  >
-                    {header.label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            {content}
-          </table>
-        </div>
       </div>
+
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="history-table" className="border-none">
+          <AccordionTrigger className="group relative flex items-center justify-center gap-2 text-base font-semibold text-foreground bg-muted/20 rounded-lg mx-6 my-4 px-4 py-3 hover:bg-muted/30 transition [&>svg]:hidden">
+            <div className="flex items-center gap-2">
+              <span>历史数据表格</span>
+              <ChevronUp className="w-4 h-4 text-muted-foreground transition-transform group-data-[state=closed]:hidden" />
+              <ChevronDown className="w-4 h-4 text-muted-foreground transition-transform group-data-[state=open]:hidden" />
+            </div>
+          </AccordionTrigger>
+          <AccordionContent className="px-0 pb-4">
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-separate border-spacing-0 text-sm">
+                <thead className="bg-transparent">
+                  <tr className="text-xs uppercase tracking-wide text-muted-foreground">
+                    {HEADERS.map((header, index) => (
+                      <th
+                        key={header.key}
+                        scope="col"
+                        className={cn(
+                          "bg-transparent px-4 py-3 text-sm font-bold text-foreground tracking-wide uppercase",
+                          "text-center",
+                          index === 0 && "rounded-tl-2xl pl-6",
+                          index === HEADERS.length - 1 && "rounded-tr-2xl pr-6"
+                        )}
+                      >
+                        {header.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                {content}
+              </table>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
   );
 }

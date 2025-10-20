@@ -8,6 +8,7 @@ import {
   Hash,
   Copy,
   Check,
+  RefreshCw,
 } from "lucide-react";
 import type { AirdropItem } from "@/hooks/useAirdropFeed";
 import { Button } from "@/components/ui/button";
@@ -146,7 +147,20 @@ export function AirdropCards({
             </p>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 text-center text-xs font-medium">
+          <div className="flex items-center gap-4">
+            {onRetry && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onRetry}
+                disabled={loading}
+                className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+              >
+                <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+              </Button>
+            )}
+
+            <div className="grid grid-cols-3 gap-2 text-center text-xs font-medium">
             {([
               { key: "ongoing", label: "进行中", tone: "text-emerald-600" },
               { key: "announced", label: "已公布", tone: "text-sky-600" },
@@ -168,6 +182,7 @@ export function AirdropCards({
                 )}
               </div>
             ))}
+            </div>
           </div>
         </div>
       </div>

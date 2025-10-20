@@ -1,4 +1,5 @@
-import { Coins, DollarSign, Activity, Clock, Shield, Info, Lightbulb, BarChart3, Cog, ChevronUp, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Coins, DollarSign, Activity, Clock, Shield, Info, Lightbulb, BarChart3, Cog, ChevronUp, ChevronDown, Filter, Check } from "lucide-react";
 import {
   Accordion,
   AccordionItem,
@@ -82,6 +83,8 @@ const COLUMNS = [
   { key: "status", label: "稳定性", align: "text-center", icon: Shield },
 ] as const;
 
+type FilterStatus = "stable" | "warning" | "unstable";
+
 export function StabilityTable({
   items,
   title = "币种稳定性列表",
@@ -89,6 +92,10 @@ export function StabilityTable({
   error = null,
   onRetry,
 }: StabilityTableProps) {
+  const [selectedFilters, setSelectedFilters] = useState<FilterStatus[]>(["stable", "warning", "unstable"]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const summary = items.reduce(
     (acc, item) => {
       const status = resolveStatus(item.st);
@@ -98,7 +105,44 @@ export function StabilityTable({
     { stable: 0, warning: 0, unstable: 0 }
   );
 
-  const showData = !loading && !error && items.length > 0;
+  const filteredItems = items.filter((item) => {
+    const status = resolveStatus(item.st);
+    return selectedFilters.includes(status);
+  });
+
+  const showData = !loading && !error && filteredItems.length > 0;
+
+  const toggleFilter = (status: FilterStatus) => {
+    setSelectedFilters(prev => 
+      prev.includes(status) 
+        ? prev.filter(s => s !== status)
+        : [...prev, status]
+    );
+  };
+
+  const getFilterLabel = () => {
+    if (selectedFilters.length === 3) return "全部";
+    if (selectedFilters.length === 0) return "无选择";
+    return selectedFilters.map(s => 
+      s === "stable" ? "稳定" : s === "warning" ? "一般" : "不稳定"
+    ).join(", ");
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isDropdownOpen]);
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card text-card-foreground">
@@ -111,6 +155,58 @@ export function StabilityTable({
             <p className="text-sm text-muted-foreground">
               聚合价格、价差与持仓周期，全局查看主要币种的稳定性表现。
             </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">筛选:</span>
+            </div>
+            <div className="relative" ref={dropdownRef}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="h-8 px-3 text-xs font-medium transition-all hover:bg-muted/50"
+              >
+                {getFilterLabel()}
+                <ChevronDown className={cn("ml-2 h-3 w-3 transition-transform", isDropdownOpen && "rotate-180")} />
+              </Button>
+              
+              {isDropdownOpen && (
+                <div className="absolute right-0 top-full mt-1 w-48 rounded-lg border border-border bg-background shadow-lg z-10">
+                  <div className="p-2 space-y-1">
+                    {[
+                      { key: "stable", label: "稳定", count: summary.stable },
+                      { key: "warning", label: "一般", count: summary.warning },
+                      { key: "unstable", label: "不稳定", count: summary.unstable },
+                    ].map((filter) => (
+                      <button
+                        key={filter.key}
+                        onClick={() => toggleFilter(filter.key as FilterStatus)}
+                        className={cn(
+                          "w-full flex items-center justify-between px-3 py-2 text-sm rounded-md transition-colors",
+                          "hover:bg-muted/50"
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Check 
+                            className={cn(
+                              "h-4 w-4",
+                              selectedFilters.includes(filter.key as FilterStatus)
+                                ? "text-primary"
+                                : "text-transparent"
+                            )}
+                          />
+                          <span>{filter.label}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">({filter.count})</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-2 text-center text-xs font-medium">
             {([
@@ -267,18 +363,21 @@ export function StabilityTable({
               </tr>
             )}
 
-            {!loading && !error && items.length === 0 && (
+            {!loading && !error && filteredItems.length === 0 && (
               <tr>
                 <td colSpan={COLUMNS.length} className="px-6 py-14 text-center">
                   <p className="text-sm text-muted-foreground">
-                    暂无可用数据，请稍后再试。
+                    {selectedFilters.length === 0
+                      ? "请选择至少一个筛选条件。"
+                      : "当前筛选条件下没有匹配的币种数据。"
+                    }
                   </p>
                 </td>
               </tr>
             )}
 
             {showData &&
-              items.map((item, index) => {
+              filteredItems.map((item, index) => {
                 const price = toNumber(item.p);
                 const spread = toNumber(item.spr);
                 const marginDays = toNumber(item.md);

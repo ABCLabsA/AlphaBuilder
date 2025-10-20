@@ -28,7 +28,7 @@ export function AirdropFeed({
           title={title}
           loading={loading}
           error={error}
-          onRetry={error ? reload : undefined}
+          onRetry={reload}
         />
       </div>
     </section>

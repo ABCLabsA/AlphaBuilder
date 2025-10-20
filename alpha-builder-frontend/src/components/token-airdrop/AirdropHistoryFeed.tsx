@@ -27,7 +27,7 @@ export function AirdropHistoryFeed({
           items={data?.airdrops ?? []}
           loading={loading}
           error={error}
-          onRetry={error ? reload : undefined}
+          onRetry={reload}
           title={title}
         />
       </div>
