@@ -35,9 +35,11 @@ interface UseAirdropFeedOptions {
   enabled?: boolean;
 }
 
-const DEFAULT_AIRDROP_URL = import.meta.env.DEV
-  ? "/api/data?fresh=1"
-  : "https://alpha123.uk/api/data?fresh=1";
+// const DEFAULT_AIRDROP_URL = import.meta.env.DEV
+//   ? "/api/data?fresh=1"
+//   : "https://alpha123.uk/api/data?fresh=1";
+
+  const DEFAULT_AIRDROP_URL = "/api/data?fresh=1"
 
 export function useAirdropFeed(options: UseAirdropFeedOptions = {}) {
   const {
