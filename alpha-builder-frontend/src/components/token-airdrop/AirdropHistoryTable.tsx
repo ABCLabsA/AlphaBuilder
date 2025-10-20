@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { RefreshCw, ChevronDown, ChevronUp } from "lucide-react";
+import { RefreshCw, ChevronDown, ChevronUp, Coins, DollarSign, Calendar, Clock, Star, TrendingUp, Package } from "lucide-react";
 import type { AirdropHistoryItem } from "@/hooks/useAirdropHistory";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,55 +19,15 @@ interface AirdropHistoryTableProps {
 }
 
 const HEADERS = [
-  { key: "token", label: "代币" },
-  { key: "name", label: "项目" },
-  { key: "date", label: "日期" },
-  { key: "time", label: "时间" },
-  { key: "points", label: "积分" },
-  { key: "amount", label: "数量" },
-  { key: "status", label: "状态" },
-  { key: "phase", label: "阶段" },
-  { key: "market_cap", label: "市值(USD)" },
-  { key: "fdv", label: "FDV(USD)" },
+  { key: "token", label: "代币", icon: Coins },
+  { key: "name", label: "项目", icon: TrendingUp },
+  { key: "date", label: "日期", icon: Calendar },
+  { key: "time", label: "时间", icon: Clock },
+  { key: "points", label: "积分", icon: Star },
+  { key: "amount", label: "数量", icon: Package },
+  { key: "market_cap", label: "市值(USDT)", icon: DollarSign },
 ];
 
-const STATUS_STYLES: Record<
-  string,
-  { badge: string; text: string; dot: string }
-> = {
-  ongoing: {
-    badge: "bg-emerald-100/70 text-emerald-700 ring-emerald-200/60",
-    text: "进行中",
-    dot: "bg-emerald-500",
-  },
-  announced: {
-    badge: "bg-sky-100/70 text-sky-700 ring-sky-200/60",
-    text: "已公布",
-    dot: "bg-sky-500",
-  },
-  completed: {
-    badge: "bg-slate-200/80 text-slate-700 ring-slate-300/70",
-    text: "已完成",
-    dot: "bg-slate-500",
-  },
-};
-
-function normalizeStatus(value?: string | null) {
-  const key = (value ?? "").toLowerCase();
-  if (key in STATUS_STYLES) {
-    return key;
-  }
-  if (key.includes("ongoing") || key.includes("live")) {
-    return "ongoing";
-  }
-  if (key.includes("complete") || key.includes("finish")) {
-    return "completed";
-  }
-  if (key.includes("announce")) {
-    return "announced";
-  }
-  return "announced";
-}
 
 function formatNumber(value: number | string | undefined | null) {
   if (value === undefined || value === null || value === "") {
@@ -103,16 +63,6 @@ export function AirdropHistoryTable({
 }: AirdropHistoryTableProps) {
   const empty = !loading && !error && items.length === 0;
 
-  const summary = useMemo(() => {
-    return items.reduce(
-      (acc, item) => {
-        const status = normalizeStatus(item.status);
-        acc[status] = (acc[status] ?? 0) + 1;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
-  }, [items]);
 
   const content = useMemo(() => {
     if (loading) {
@@ -242,41 +192,10 @@ export function AirdropHistoryTable({
                 {formatNumber(item.amount)}
               </td>
               <td className={cn(
-                "px-4 py-3 text-center",
-                index === 0 && "pt-4",
-                isLastRow && "pb-4"
-              )}>
-                {(() => {
-                  const statusKey = normalizeStatus(item.status);
-                  const meta = STATUS_STYLES[statusKey];
-                  return (
-                    <span
-                      className={cn(
-                        "inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold capitalize ring-1 ring-inset",
-                        meta.badge
-                      )}
-                    >
-                      <span className={cn("h-2 w-2 rounded-full", meta.dot)} />
-                      {meta.text}
-                    </span>
-                  );
-                })()}
-              </td>
-              <td className={cn(
-                "px-4 py-3 text-center",
-                index === 0 && "pt-4",
-                isLastRow && "pb-4"
-              )}>{item.phase ?? "-"}</td>
-              <td className={cn(
-                "px-4 py-3 text-center",
+                "px-4 py-4 pr-6 text-center",
                 index === 0 && "pt-4",
                 isLastRow && "pb-4"
               )}>{formatNumber(item.market_cap)}</td>
-              <td className={cn(
-                "px-4 py-3 pr-6 text-center",
-                index === 0 && "pt-4",
-                isLastRow && "pb-4"
-              )}>{formatNumber(item.fdv)}</td>
             </tr>
           );
         })}
@@ -308,22 +227,6 @@ export function AirdropHistoryTable({
               </Button>
             )}
             <div className="flex flex-wrap gap-2 text-xs font-semibold text-muted-foreground">
-              {(["ongoing", "announced", "completed"] as const).map((key) => {
-                const meta = STATUS_STYLES[key];
-                return (
-                  <span
-                    key={key}
-                    className={cn(
-                      "inline-flex items-center gap-1 rounded-full border border-border/50 bg-background/80 px-3 py-1 shadow-sm",
-                      "backdrop-blur-sm"
-                    )}
-                  >
-                    <span className={cn("h-2 w-2 rounded-full", meta.dot)} />
-                    {meta.text}
-                    <span className="text-foreground/80">{summary[key] ?? 0}</span>
-                  </span>
-                );
-              })}
               <span className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-background/80 px-3 py-1 shadow-sm backdrop-blur-sm">
                 总计
                 <span className="text-foreground/80">{items.length}</span>
@@ -358,7 +261,10 @@ export function AirdropHistoryTable({
                           index === HEADERS.length - 1 && "rounded-tr-2xl pr-6"
                         )}
                       >
-                        {header.label}
+                        <div className="flex items-center gap-1.5 justify-center">
+                          {header.icon && <header.icon className="h-4 w-4 text-muted-foreground" />}
+                          <span>{header.label}</span>
+                        </div>
                       </th>
                     ))}
                   </tr>

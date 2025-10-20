@@ -29,7 +29,7 @@ const STATUS_META: Record<
   { label: string; badge: string; dot: string }
 > = {
   announced: {
-    label: "待公布",
+    label: "已公布",
     badge: "bg-sky-100/70 text-sky-700 ring-sky-200",
     dot: "bg-sky-500",
   },
@@ -163,7 +163,7 @@ export function AirdropCards({
             <div className="grid grid-cols-3 gap-2 text-center text-xs font-medium">
             {([
               { key: "ongoing", label: "进行中", tone: "text-emerald-600" },
-              { key: "announced", label: "待公布", tone: "text-sky-600" },
+              { key: "announced", label: "已公布", tone: "text-sky-600" },
               { key: "completed", label: "已完成", tone: "text-slate-600" },
             ] as const).map((itemMeta) => (
               <div

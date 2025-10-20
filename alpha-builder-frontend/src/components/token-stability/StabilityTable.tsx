@@ -92,7 +92,7 @@ export function StabilityTable({
   error = null,
   onRetry,
 }: StabilityTableProps) {
-  const [selectedFilters, setSelectedFilters] = useState<FilterStatus[]>(["stable", "warning", "unstable"]);
+  const [selectedFilters, setSelectedFilters] = useState<FilterStatus[]>(["stable"]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
