@@ -15,7 +15,8 @@
 ### 1) 项目概述 (Overview)
 
 - **项目名称**：AlphaBuilder
-- **一句话介绍**：用邮箱登录即可开通 ZeroDev Kernel 智能钱包，并实时跟踪稳定性与空投机会。
+- **一句话介绍**：From Alpha to Builders —— 把“看消息”变成“做贡献并拿到凭证”。
+- 用邮箱登录即可开通 ZeroDev Kernel 智能钱包，并实时跟踪稳定性与空投机会。
 - **目标用户**：希望无痛体验账户抽象的 Web3 新用户、运营多钱包的项目方、需要情报的量化/空投策略团队。
 - **核心问题与动机（Pain Points）**：传统 AA 方案 onboarding 繁琐，用户缺乏可操作的数据情报，团队难以统一管理社交恢复与会话密钥。
 - **解决方案（Solution）**：提供 NestJS + Prisma 的邮箱注册 API、自动派生 ZeroDev Kernel 钱包、Solidity 多模块 AA 套件，以及可视化的稳定性/空投看板。
