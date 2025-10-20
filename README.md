@@ -1,6 +1,6 @@
 # AlphaBuilder - ETHShanghai 2025
 
-> 基于账户抽象的钱包引擎与链上情报工作台。
+> 基于抽象账户的链上Alpha情报、Quest聚合器的公共物品。
 
 ## 一、提交物清单 (Deliverables)
 
@@ -22,7 +22,9 @@
 
 ### 2) 架构与实现 (Architecture & Implementation)
 
-- **总览图（可贴图/链接）**：暂无架构图（开发中），详见关键模块说明。
+- **总览图（可贴图/链接）**：
+- <img width="2134" height="1069" alt="Alpha Builder" src="https://github.com/user-attachments/assets/e4e84662-6063-477d-97e8-1f7a080a611a" />
+
 - **关键模块**：
   - 前端：React 19 + Vite + Tailwind CSS，内置 `EmailAuthProvider`、实时稳定性表格与空投卡片/历史列表。
   - 后端：NestJS 10、Prisma 5、PostgreSQL，提供 `/auth/signup` / `/auth/login`、JWT 会话、Argon2 密码与钱包密钥存储。
