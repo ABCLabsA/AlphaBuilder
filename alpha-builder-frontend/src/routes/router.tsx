@@ -103,20 +103,20 @@ const routes = [
         ),
       },
       {
-        path: "pricing",
+        path: "questask",
         element: (
           <PagePlaceholder
-            title="Pricing"
-            description="Describe your pricing model and plans."
+            title="QuestTask"
+            description="QuestTask is a platform for creating and managing tasks."
           />
         ),
       },
       {
-        path: "blog",
+        path: "faq",
         element: (
           <PagePlaceholder
-            title="Blog"
-            description="Publish articles, announcements, and thought leadership."
+            title="FAQ"
+            description="FAQ is a platform for creating and managing tasks."
           />
         ),
       },

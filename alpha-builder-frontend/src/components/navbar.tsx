@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Book, Loader2, Menu, Sunset, Trees, Zap, User, LogOut, ChevronDown } from "lucide-react";
+import { Loader2, Menu,User, LogOut, ChevronDown } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import alphaBuilderLogo from "@/assets/alphabuilder-logo.svg";
 import { cn } from "@/lib/utils";
@@ -72,74 +72,74 @@ const Navbar = ({
   },
   menu = [
     { title: "Home", url: "/" },
+    // {
+    //   title: "Products",
+    //   url: "/products",
+    //   items: [
+    //     {
+    //       title: "Blog",
+    //       description: "The latest industry news, updates, and info",
+    //       icon: <Book className="size-5 shrink-0" />,
+    //       url: "/products/blog",
+    //     },
+    //     {
+    //       title: "Company",
+    //       description: "Our mission is to innovate and empower the world",
+    //       icon: <Trees className="size-5 shrink-0" />,
+    //       url: "/products/company",
+    //     },
+    //     {
+    //       title: "Careers",
+    //       description: "Browse job listing and discover our workspace",
+    //       icon: <Sunset className="size-5 shrink-0" />,
+    //       url: "/products/careers",
+    //     },
+    //     {
+    //       title: "Support",
+    //       description:
+    //         "Get in touch with our support team or visit our community forums",
+    //       icon: <Zap className="size-5 shrink-0" />,
+    //       url: "/products/support",
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "Resources",
+    //   url: "/resources",
+    //   items: [
+    //     {
+    //       title: "Help Center",
+    //       description: "Get all the answers you need right here",
+    //       icon: <Zap className="size-5 shrink-0" />,
+    //       url: "/resources/help-center",
+    //     },
+    //     {
+    //       title: "Contact Us",
+    //       description: "We are here to help you with any questions you have",
+    //       icon: <Sunset className="size-5 shrink-0" />,
+    //       url: "/resources/contact",
+    //     },
+    //     {
+    //       title: "Status",
+    //       description: "Check the current status of our services and APIs",
+    //       icon: <Trees className="size-5 shrink-0" />,
+    //       url: "/resources/status",
+    //     },
+    //     {
+    //       title: "Terms of Service",
+    //       description: "Our terms and conditions for using our services",
+    //       icon: <Book className="size-5 shrink-0" />,
+    //       url: "/resources/terms",
+    //     },
+    //   ],
+    // },
     {
-      title: "Products",
-      url: "/products",
-      items: [
-        {
-          title: "Blog",
-          description: "The latest industry news, updates, and info",
-          icon: <Book className="size-5 shrink-0" />,
-          url: "/products/blog",
-        },
-        {
-          title: "Company",
-          description: "Our mission is to innovate and empower the world",
-          icon: <Trees className="size-5 shrink-0" />,
-          url: "/products/company",
-        },
-        {
-          title: "Careers",
-          description: "Browse job listing and discover our workspace",
-          icon: <Sunset className="size-5 shrink-0" />,
-          url: "/products/careers",
-        },
-        {
-          title: "Support",
-          description:
-            "Get in touch with our support team or visit our community forums",
-          icon: <Zap className="size-5 shrink-0" />,
-          url: "/products/support",
-        },
-      ],
+      title: "QuestTask",
+      url: "/questask",
     },
     {
-      title: "Resources",
-      url: "/resources",
-      items: [
-        {
-          title: "Help Center",
-          description: "Get all the answers you need right here",
-          icon: <Zap className="size-5 shrink-0" />,
-          url: "/resources/help-center",
-        },
-        {
-          title: "Contact Us",
-          description: "We are here to help you with any questions you have",
-          icon: <Sunset className="size-5 shrink-0" />,
-          url: "/resources/contact",
-        },
-        {
-          title: "Status",
-          description: "Check the current status of our services and APIs",
-          icon: <Trees className="size-5 shrink-0" />,
-          url: "/resources/status",
-        },
-        {
-          title: "Terms of Service",
-          description: "Our terms and conditions for using our services",
-          icon: <Book className="size-5 shrink-0" />,
-          url: "/resources/terms",
-        },
-      ],
-    },
-    {
-      title: "Pricing",
-      url: "/pricing",
-    },
-    {
-      title: "Blog",
-      url: "/blog",
+      title: "FAQ",
+      url: "/faq",
     },
   ],
   auth = {
