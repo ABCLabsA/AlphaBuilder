@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -12,6 +13,14 @@ import { LoginDto } from "./dto/login.dto.js";
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Get("health")
+  async health() {
+    return {
+      message: "Alpha Builder backend is running",
+      status: "ok",
+    };
+  }
 
   @Post("signup")
   async signup(@Body() dto: SignupDto) {
