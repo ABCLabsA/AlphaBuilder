@@ -1,5 +1,5 @@
 # NestJS + Prisma 应用 Dockerfile
-FROM node:20-alpine
+FROM node:20-bullseye as builder
 
 # 设置工作目录
 WORKDIR /app
