@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Loader2, Menu,User, LogOut, ChevronDown } from "lucide-react";
+import { Loader2, Menu, User, LogOut, ChevronDown, Wallet } from "lucide-react";
 import { Link, NavLink } from "react-router-dom";
 import alphaBuilderLogo from "@/assets/alphabuilder-logo.svg";
 import { cn } from "@/lib/utils";
 import { useEmailAuth } from "@/hooks/useEmailAuth";
+import { useMetaMaskAuth } from "@/hooks/useMetaMaskAuth";
 
 import {
   Accordion,
@@ -148,8 +149,17 @@ const Navbar = ({
   },
 }: NavbarProps) => {
   const { user, status, isLoading, logout, walletAddress } = useEmailAuth();
-  const isAuthenticated = status === "authenticated" && !!user;
-  const loginLabel = isLoading ? (
+  const { 
+    user: metaMaskUser, 
+    status: metaMaskStatus, 
+    isLoading: isMetaMaskLoading, 
+    disconnect: disconnectMetaMask 
+  } = useMetaMaskAuth();
+  
+  const isEmailAuthenticated = status === "authenticated" && !!user;
+  const isMetaMaskConnected = metaMaskStatus === "connected" && !!metaMaskUser;
+  const isAuthenticated = isEmailAuthenticated || isMetaMaskConnected;
+  const loginLabel = isLoading || isMetaMaskLoading ? (
     <>
       <Loader2 className="mr-2 size-4 animate-spin" />
       Loading...
@@ -165,13 +175,28 @@ const Navbar = ({
       layout === "column" ? "flex-col" : "items-center"
     );
 
-    if (isAuthenticated && user) {
-      const walletLabel = walletAddress
-        ? shortenAddress(walletAddress)
-        : "Provisioning wallet...";
+    if (isAuthenticated) {
+      // Determine which authentication method is active
+      const isEmailAuth = isEmailAuthenticated;
+      
+      let displayName: string;
+      let walletLabel: string;
+      
+      if (isEmailAuth && user) {
+        displayName = user.email;
+        walletLabel = walletAddress
+          ? shortenAddress(walletAddress)
+          : "Provisioning wallet...";
+      } else if (metaMaskUser) {
+        displayName = "MetaMask User";
+        walletLabel = shortenAddress(metaMaskUser.address);
+      } else {
+        displayName = "User";
+        walletLabel = "Unknown";
+      }
       
       if (layout === "column") {
-        // Mobile layout - keep the original design
+        // Mobile layout
         return (
           <div className={containerClass}>
             <Link
@@ -182,24 +207,34 @@ const Navbar = ({
                 "w-full text-left"
               )}
             >
-              <div className="font-medium">{user.email}</div>
+              <div className="font-medium flex items-center gap-2">
+                {isEmailAuth ? <User className="h-4 w-4" /> : <Wallet className="h-4 w-4" />}
+                {displayName}
+              </div>
               <div className="font-mono text-xs text-muted-foreground">
                 {walletLabel}
               </div>
             </Link>
             <Button
               variant="outline"
-              onClick={logout}
+              onClick={isEmailAuth ? logout : disconnectMetaMask}
               className="w-full"
             >
-              Log out
+              {isEmailAuth ? "Log out" : "Disconnect"}
             </Button>
           </div>
         );
       }
 
       // Desktop layout - use dropdown
-      return <UserDropdown user={user} walletLabel={walletLabel} logout={logout} />;
+      return (
+        <UserDropdown 
+          user={{ email: displayName }} 
+          walletLabel={walletLabel} 
+          logout={isEmailAuth ? logout : disconnectMetaMask}
+          isMetaMask={!isEmailAuth}
+        />
+      );
     }
 
     return (
@@ -406,11 +441,13 @@ const SubMenuLink = ({ item }: { item: MenuItem }) => {
 const UserDropdown = ({ 
   user, 
   walletLabel, 
-  logout 
+  logout,
+  isMetaMask = false
 }: { 
   user: { email: string }; 
   walletLabel: string; 
-  logout: () => void; 
+  logout: () => void;
+  isMetaMask?: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -442,7 +479,10 @@ const UserDropdown = ({
         )}
       >
         <div className="flex-1">
-          <div className="font-medium">{user.email}</div>
+          <div className="font-medium flex items-center gap-2">
+            {isMetaMask ? <Wallet className="h-4 w-4" /> : <User className="h-4 w-4" />}
+            {user.email}
+          </div>
           <div className="font-mono text-xs text-muted-foreground">
             {walletLabel}
           </div>
@@ -469,7 +509,7 @@ const UserDropdown = ({
               className="flex items-center gap-3 px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors w-full text-left"
             >
               <LogOut className="h-4 w-4 text-muted-foreground" />
-              <span>Sign Out</span>
+              <span>{isMetaMask ? "Disconnect" : "Sign Out"}</span>
             </button>
           </div>
         </div>

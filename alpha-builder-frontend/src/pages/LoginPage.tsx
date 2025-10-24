@@ -3,11 +3,20 @@ import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useEmailAuth } from "@/hooks/useEmailAuth";
+import { useMetaMaskAuth } from "@/hooks/useMetaMaskAuth";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login, status, user, isLoading, error, dismissError } =
     useEmailAuth();
+  const { 
+    connect: connectMetaMask, 
+    status: metaMaskStatus, 
+    user: metaMaskUser, 
+    isLoading: isMetaMaskLoading, 
+    error: metaMaskError, 
+    dismissError: dismissMetaMaskError 
+  } = useMetaMaskAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -16,6 +25,12 @@ const LoginPage = () => {
       navigate("/", { replace: true });
     }
   }, [status, user, navigate]);
+
+  useEffect(() => {
+    if (metaMaskStatus === "connected" && metaMaskUser) {
+      navigate("/", { replace: true });
+    }
+  }, [metaMaskStatus, metaMaskUser, navigate]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -32,7 +47,17 @@ const LoginPage = () => {
     if (error) {
       dismissError();
     }
+    if (metaMaskError) {
+      dismissMetaMaskError();
+    }
     updater(value);
+  };
+
+  const handleMetaMaskConnect = async () => {
+    if (metaMaskError) {
+      dismissMetaMaskError();
+    }
+    await connectMetaMask();
   };
 
   return (
@@ -40,9 +65,41 @@ const LoginPage = () => {
       <header className="space-y-2 text-center">
         <h1 className="text-3xl font-semibold tracking-tight">Log in</h1>
         <p className="text-muted-foreground">
-          Enter your email and password to access your account.
+          Connect with MetaMask or enter your email and password.
         </p>
       </header>
+      
+      {/* MetaMask Login Option */}
+      <div className="space-y-4">
+        <Button
+          type="button"
+          variant="outline"
+          size="default"
+          className="w-full"
+          onClick={handleMetaMaskConnect}
+          disabled={isMetaMaskLoading}
+        >
+          {isMetaMaskLoading ? "Connecting..." : "Connect with MetaMask"}
+        </Button>
+        
+        {metaMaskError ? (
+          <p className="text-sm text-destructive" role="alert">
+            {metaMaskError}
+          </p>
+        ) : null}
+      </div>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            Or continue with email
+          </span>
+        </div>
+      </div>
+
       <form className="space-y-5" onSubmit={handleSubmit}>
         <div className="space-y-2">
           <label htmlFor="email" className="block text-sm font-medium">

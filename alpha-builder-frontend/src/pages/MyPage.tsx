@@ -4,17 +4,33 @@ import { formatEther } from "viem";
 import { Wallet, Mail, Copy, Check, RefreshCw, ArrowDown, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEmailAuth } from "@/hooks/useEmailAuth";
+import { useMetaMaskAuth } from "@/hooks/useMetaMaskAuth";
 import { cn } from "@/lib/utils";
 
 const MyPage = () => {
   const navigate = useNavigate();
   const {
-    status,
-    isLoading,
-    user,
-    walletAddress,
+    status: emailStatus,
+    isLoading: emailLoading,
+    user: emailUser,
+    walletAddress: emailWalletAddress,
     walletClient,
   } = useEmailAuth();
+  const {
+    status: metaMaskStatus,
+    isLoading: metaMaskLoading,
+    user: metaMaskUser,
+  } = useMetaMaskAuth();
+  
+  // Determine which authentication method is active
+  const isEmailAuthenticated = emailStatus === "authenticated" && !!emailUser;
+  const isMetaMaskConnected = metaMaskStatus === "connected" && !!metaMaskUser;
+  const isAuthenticated = isEmailAuthenticated || isMetaMaskConnected;
+  const isLoading = emailLoading || metaMaskLoading;
+  
+  // Get the active wallet address
+  const activeWalletAddress = isEmailAuthenticated ? emailWalletAddress : metaMaskUser?.address;
+  
   const [balance, setBalance] = useState<bigint | null>(null);
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
@@ -22,12 +38,19 @@ const MyPage = () => {
   const [copiedEmail, setCopiedEmail] = useState(false);
 
   useEffect(() => {
-    if (!isLoading && status !== "authenticated") {
+    if (!isLoading && !isAuthenticated) {
       navigate("/login", { replace: true });
     }
-  }, [status, isLoading, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
   const loadBalance = useCallback(async () => {
+    // For MetaMask users, we'll use the balance from the MetaMask user object
+    if (isMetaMaskConnected && metaMaskUser?.balance) {
+      setBalance(BigInt(metaMaskUser.balance));
+      return;
+    }
+    
+    // For email auth users, use the wallet client
     if (!walletClient) {
       setBalance(null);
       return;
@@ -47,13 +70,13 @@ const MyPage = () => {
     } finally {
       setBalanceLoading(false);
     }
-  }, [walletClient]);
+  }, [walletClient, isMetaMaskConnected, metaMaskUser]);
 
   useEffect(() => {
-    if (status === "authenticated" && walletClient) {
+    if (isAuthenticated) {
       void loadBalance();
     }
-  }, [status, walletClient, loadBalance]);
+  }, [isAuthenticated, loadBalance]);
 
   const formattedBalance = useMemo(() => {
     if (balance === null) {
@@ -85,7 +108,7 @@ const MyPage = () => {
     }
   };
 
-  if (status !== "authenticated") {
+  if (!isAuthenticated) {
     return null;
   }
 
@@ -116,13 +139,13 @@ const MyPage = () => {
                 <p className="text-sm font-medium text-muted-foreground mb-2">Wallet Address</p>
                 <div className="flex items-center gap-2 bg-muted/30 px-4 py-3 rounded-lg">
                   <p className="font-mono text-base break-all flex-1">
-                    {walletAddress ?? "Unavailable"}
+                    {activeWalletAddress ?? "Unavailable"}
                   </p>
-                  {walletAddress && (
+                  {activeWalletAddress && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard(walletAddress, 'wallet')}
+                      onClick={() => copyToClipboard(activeWalletAddress, 'wallet')}
                       className="h-8 w-8 p-0 hover:bg-muted/50"
                     >
                       {copiedWallet ? (
@@ -134,18 +157,18 @@ const MyPage = () => {
                   )}
                 </div>
               </div>
-              {user?.email && (
+              {isEmailAuthenticated && emailUser?.email && (
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-2">Linked Email</p>
                   <div className="flex items-center gap-2 bg-muted/30 px-4 py-3 rounded-lg">
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     <p className="text-base flex-1">
-                      {user.email}
+                      {emailUser.email}
                     </p>
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard(user.email, 'email')}
+                      onClick={() => copyToClipboard(emailUser.email, 'email')}
                       className="h-8 w-8 p-0 hover:bg-muted/50"
                     >
                       {copiedEmail ? (
@@ -154,6 +177,18 @@ const MyPage = () => {
                         <Copy className="h-4 w-4 text-muted-foreground" />
                       )}
                     </Button>
+                  </div>
+                </div>
+              )}
+              
+              {isMetaMaskConnected && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Authentication Method</p>
+                  <div className="flex items-center gap-2 bg-muted/30 px-4 py-3 rounded-lg">
+                    <Wallet className="h-4 w-4 text-muted-foreground" />
+                    <p className="text-base flex-1">
+                      MetaMask Wallet
+                    </p>
                   </div>
                 </div>
               )}
