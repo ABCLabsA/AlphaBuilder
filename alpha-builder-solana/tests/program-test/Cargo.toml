@@ -1,0 +1,25 @@
+[package]
+name = "alpha_builder-program-test"
+version = "0.1.0"
+edition.workspace = true
+publish = false
+
+[dev-dependencies]
+anchor-lang.workspace = true
+anchor-spl.workspace = true
+solana-program.workspace = true
+solana-program-test.workspace = true
+solana-sdk.workspace = true
+alpha_builder = { path = "../../programs/alpha_builder", features = ["no-entrypoint"] }
+tokio = { version = "1.38", features = ["macros", "rt-multi-thread"] }
+anyhow = "1.0"
+
+[lib]
+name = "alpha_builder_program_test"
+path = "src/lib.rs"
+doctest = false
+
+[[test]]
+name = "alpha_builder"
+path = "tests/alpha_builder.rs"
+test = true
