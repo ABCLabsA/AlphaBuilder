@@ -1,4 +1,4 @@
-# AlphaBuilder - ETHShanghai 2025
+# AlphaBuilder - Solana Hackathon
 
 > 基于抽象账户的链上Alpha情报、Quest聚合器的公共物品。
 
