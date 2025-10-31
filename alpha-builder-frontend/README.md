@@ -1,26 +1,26 @@
 # Alpha Builder – Frontend
 
-React + Vite dashboard scaffold for account onboarding experiments.
+React + Vite dashboard scaffold for Solana smart-account onboarding experiments.
 
 ## Features
 
 - Email + password authentication views powered by a lightweight context provider.
-- Automatic ZeroDev-compatible AA wallet provisioning for logged-in users, with keys
-  safely kept in browser storage for prototyping.
+- Solana smart-account metadata provisioning for logged-in users, with encrypted
+  key material stored locally and synced to the backend for Anchor program usage.
 - Placeholder marketing routes for products, resources, and blog content.
 - Component library based on Tailwind UI primitives for rapid iteration.
 
 ## Environment
 
-Copy `.env.example` to `.env` and point to the backend:
+Copy `.env.example` to `.env` and point to the backend and Solana cluster:
 
 ```
 VITE_API_BASE_URL=http://localhost:3000
 VITE_AUTH_LOGIN_PATH=/auth/login
 VITE_AUTH_SIGNUP_PATH=/auth/signup
-VITE_ZERODEV_RPC_URL=https://rpc.zerodev.app/api/v3/<project-uuid>/chain/223
-# (Optional) set this only if your RPC URL does not embed the chain id:
-# VITE_ZERODEV_CHAIN_ID=223
+VITE_SOLANA_RPC_URL=https://api.devnet.solana.com
+VITE_SOLANA_PROGRAM_ID=AlphaBldr11111111111111111111111111111111111
+VITE_SOLANA_COMMITMENT=processed
 ```
 
 The auth provider posts credentials to the configured endpoints and expects a JSON
@@ -37,11 +37,10 @@ Adjust the response parsing in `src/hooks/useEmailAuth.tsx` if your backend retu
 different field names.
 
 When authentication succeeds, the provider derives or retrieves a deterministic
-local private key per email and instantiates a `SimpleAccount` smart account via
-ZeroDev’s 2024 RPC unifies bundler and paymaster routes. Point
-`VITE_ZERODEV_RPC_URL` to the project URL copied from the ZeroDev dashboard
-(it already includes the chain id segment, for example `/chain/223`). If your
-URL does not include the chain id, set `VITE_ZERODEV_CHAIN_ID` manually.
+local keypair per email, encrypts the secret, and persists the Solana address so
+the backend can coordinate Anchor transactions against the on-chain vault/wallet
+PDAs. Point `VITE_SOLANA_RPC_URL` to the cluster you are targeting (Devnet by
+default) and keep `VITE_SOLANA_PROGRAM_ID` in sync with the deployed program ID.
 
 ## Scripts
 

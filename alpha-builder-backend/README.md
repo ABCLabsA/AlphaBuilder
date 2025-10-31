@@ -1,6 +1,6 @@
 # Prisma 操作指南
 
-本项目使用 [Prisma](https://www.prisma.io/) 作为 ORM。以下命令均在 `alpha-builder-backend` 目录下执行，默认使用 `pnpm`，你也可以将 `pnpm` 替换为 `npm` 或 `yarn`。
+本项目使用 [Prisma](https://www.prisma.io/) 作为 ORM，并提供 NestJS API 以持久化 Solana 智能账户的钱包地址与加密私钥。以下命令均在 `alpha-builder-backend` 目录下执行，默认使用 `pnpm`，你也可以将 `pnpm` 替换为 `npm` 或 `yarn`。
 
 ## 环境准备
 - 复制 `.env.example` 为 `.env`，并根据实际数据库连接信息调整 `DATABASE_URL`。
@@ -19,7 +19,7 @@
 1. 确保 `.env` 和数据库服务配置正确。
 2. 如有 schema 变更，先运行 `npx prisma db push`（演示或临时代码时使用），或使用 `npx prisma migrate dev --name <name>` 创建并应用迁移。
 3. 运行 `npx prisma generate` 确保生成的 Prisma Client 最新。
-4. 在 NestJS 应用中使用 `PrismaService`（或自定义服务）访问数据库。
+4. 在 NestJS 应用中使用 `PrismaService`（或自定义服务）访问数据库，读取/写入用户的邮箱信息与 Solana 钱包元数据。
 
 > 提示：生产环境请根据实际需求调整数据库账号和密码，并妥善保存迁移记录。
 
